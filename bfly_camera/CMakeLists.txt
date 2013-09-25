@@ -16,17 +16,19 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 # Setting this prefix will be used by INSTALL commands in next CMakeLists
 SET(CMAKE_INSTALL_PREFIX /usr/local)
 
+# Build type
 IF (NOT CMAKE_BUILD_TYPE)
  SET(CMAKE_BUILD_TYPE "RELEASE") 
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
+# compliler flags
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -D_REENTRANT")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -D_REENTRANT")
 
 ADD_SUBDIRECTORY(src)
 
+#make doc
 FIND_PACKAGE(Doxygen)
-
 FIND_PATH(IRI_DOC_DIR doxygen.conf ${CMAKE_SOURCE_DIR}/doc/iri_doc/)
 IF (IRI_DOC_DIR)
   ADD_CUSTOM_TARGET (doc ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/iri_doc/doxygen.conf)
@@ -34,14 +36,13 @@ ELSE (IRI_DOC_DIR)
   ADD_CUSTOM_TARGET (doc ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/doxygen.conf)
 ENDIF (IRI_DOC_DIR)
 
+#distclean
 ADD_CUSTOM_TARGET (distclean @echo cleaning cmake files)
-
 IF (UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "distribution clean"
     COMMAND make ARGS clean
     COMMAND rm ARGS -rf ${CMAKE_SOURCE_DIR}/build/*
-
     TARGET  distclean
   )
 ELSE(UNIX)
@@ -51,13 +52,12 @@ ELSE(UNIX)
   )
 ENDIF(UNIX)
 
+#uninstall
 ADD_CUSTOM_TARGET (uninstall @echo uninstall package)
-
 IF (UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "uninstall package"
     COMMAND xargs ARGS rm < install_manifest.txt
-
     TARGET  uninstall
   )
 ELSE(UNIX)
