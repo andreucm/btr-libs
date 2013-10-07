@@ -53,7 +53,7 @@ CbflyCamera::~CbflyCamera()
       if ( cam.IsConnected() ) this->close();
 }
 
-bool CbflyCamera::isInitOk()
+bool CbflyCamera::isInitOk() const
 {
       return initOk;
 }
@@ -82,38 +82,139 @@ int CbflyCamera::close()
       return BFLY_SUCCESS;    
 }
 
-int CbflyCamera::configure(unsigned int imW, unsigned int imH, unsigned int pxFormat)
+/*
+int CbflyCamera::configure(const bfly_videoMode vMode, const bfly_pixelFormat pxFormat)
 {
-      //load image settings to imageSettings struct
-      imageSettings.offsetX = 0;
-      imageSettings.offsetY = 0;
-      imageSettings.height = imH;
-      imageSettings.width = imW;
-      switch(pxFormat)
+      FlyCapture2::Format7ImageSettings imgSettings;
+      FlyCapture2::Format7Info fmt7info;
+      FlyCapture2::Format7PacketInfo fmt7infoPacket;
+      bool supported, valid;
+      
+      //Set video mode
+      switch (vMode)
       {
-            case MONO8:
-                  imageSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_MONO8;
-                  break;
-            case RGB8:
-                  imageSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8;
-                  break;
-            default:
-                  std::cout << "CbflyCamera::configure(): Unknown image format: " << pxFormat << std::endl;
+            case MODE0: imgSettings.mode = FlyCapture2::MODE_0; break;
+            case MODE1: imgSettings.mode = FlyCapture2::MODE_1; break;
+            case MODE4: imgSettings.mode = FlyCapture2::MODE_4; break;
+            case MODE5: imgSettings.mode = FlyCapture2::MODE_5; break;
+            default: 
+                  std::cout << "CbflyCamera::configure(): Unknown video mode" << std::endl; 
                   return BFLY_ERROR;
                   break;
       }
       
-      //set image settings
-      std::cout << "Setting GigE image settings" << std::endl;
-      pgError = cam.SetGigEImageSettings( &imageSettings );
+      //set pixel format
+      switch (pxFormat)
+      {
+            case MONO8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_MONO8; break;
+            case RGB8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8; break;
+            default:
+                  std::cout << "CbflyCamera::configure(): Unknown pixel format: " << pxFormat << std::endl;
+                  return BFLY_ERROR;
+                  break;
+      }
+      
+      //get max image size, given the video mode
+      fmt7info.mode = imgSettings.mode;
+      pgError = cam.GetFormat7Info( &fmt7info, &supported );
+      if (pgError != FlyCapture2::PGRERROR_OK)
+      {
+            pgError.PrintErrorTrace();
+            return BFLY_ERROR;
+      }
+            
+      //set image size as the maximum allowed, and resets ROI offsets
+      imgSettings.offsetX = 0;
+      imgSettings.offsetY = 0;
+      imgSettings.width = fmt7info.maxWidth;
+      imgSettings.height = fmt7info.maxHeight;
+      
+      //check validity of configuration
+      pgError = cam.ValidateFormat7Settings( &imgSettings, &valid, &fmt7infoPacket );
+      if (pgError != FlyCapture2::PGRERROR_OK)
+      {
+            pgError.PrintErrorTrace();
+            return BFLY_ERROR;
+      }
+      if ( !valid )
+      {
+            std::cout << "CbflyCamera::configure(): Format7 settings are not valid" << std::endl;
+            return BFLY_ERROR;
+      }
+
+      //finally set configuration
+      pgError = cam.SetFormat7Configuration( &imgSettings, fmt7infoPacket.recommendedBytesPerPacket );
+      if (pgError != FlyCapture2::PGRERROR_OK)
+      {
+            pgError.PrintErrorTrace();
+            return BFLY_ERROR;
+      }
+      
+      //return SUCCESS
+      return BFLY_SUCCESS;
+}
+*/
+
+int CbflyCamera::configure(const bfly_videoMode vMode, const bfly_pixelFormat pxFormat)
+{
+      FlyCapture2::GigEImageSettingsInfo imgSettingsInfo;
+      FlyCapture2::Mode vModeFC2;
+      
+std::cout << "configure(): " << __LINE__ << std::endl;
+      
+      //Set video mode
+      switch (vMode)
+      {
+            case MODE0: vModeFC2 = FlyCapture2::MODE_0; break;
+            case MODE1: vModeFC2 = FlyCapture2::MODE_1; break;
+            case MODE4: vModeFC2 = FlyCapture2::MODE_4; break;
+            case MODE5: vModeFC2 = FlyCapture2::MODE_5; break;
+            default: 
+                  std::cout << "CbflyCamera::configure(): Unknown video mode" << std::endl; 
+                  return BFLY_ERROR;
+                  break;
+      }
+      pgError = cam.SetGigEImagingMode( vModeFC2 );
       if (pgError != FlyCapture2::PGRERROR_OK)
       {
             pgError.PrintErrorTrace();
             return BFLY_ERROR;
       }
 
-      //return success
+      //set pixel format and image size to maximum allowed
+      pgError = cam.GetGigEImageSettingsInfo( &imgSettingsInfo );
+      if (pgError != FlyCapture2::PGRERROR_OK)
+      {
+            pgError.PrintErrorTrace();
+            return BFLY_ERROR;
+      }
+      imgSettings.offsetX = 0;
+      imgSettings.offsetY = 0;
+      imgSettings.height = imgSettingsInfo.maxHeight;
+      imgSettings.width = imgSettingsInfo.maxWidth;
+      switch (pxFormat)
+      {
+            case MONO8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_MONO8; break;
+            case RGB8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8; break;
+            default:
+                  std::cout << "CbflyCamera::configure(): Unknown pixel format: " << pxFormat << std::endl;
+                  return BFLY_ERROR;
+                  break;
+      }
+      pgError = cam.SetGigEImageSettings( &imgSettings );
+      if (pgError != FlyCapture2::PGRERROR_OK)
+      {
+            pgError.PrintErrorTrace();
+            return BFLY_ERROR;
+      }
+            
+      //return SUCCESS
       return BFLY_SUCCESS;
+}
+
+int CbflyCamera::configure(const unsigned int streamCh)
+{
+      
 }
 
 int CbflyCamera::startAcquisition()
@@ -165,11 +266,13 @@ int CbflyCamera::getCurrentImage(cv::Mat & img)
       }
       
       //do conversion from FlyCapture2::Image to cv::Mat      
-      if ( imageSettings.pixelFormat == FlyCapture2::PIXEL_FORMAT_MONO8 ) 
+      if ( imgSettings.pixelFormat == FlyCapture2::PIXEL_FORMAT_MONO8 ) 
             cvImage.create(rawImage.GetRows(),rawImage.GetCols(),CV_8UC1);
-      if ( imageSettings.pixelFormat == FlyCapture2::PIXEL_FORMAT_RGB8 ) 
+      if ( imgSettings.pixelFormat == FlyCapture2::PIXEL_FORMAT_RGB8 ) 
             cvImage.create(rawImage.GetRows(),rawImage.GetCols(),CV_8UC3);
       cvImage.data = rawImage(0,0);//set cv data pointer to rawImage address
+      
+      //clone to external argument image
       img = cvImage.clone();
       
       //return success
@@ -203,7 +306,7 @@ void CbflyCamera::printCameraInfo()
       }
 }
 
-void CbflyCamera::printImageInfo()
+void CbflyCamera::printImageInfo() const
 {
       std::cout   << "  Image Rows: " << rawImage.GetRows() << std::endl
             << "  Image Cols: " << rawImage.GetCols() << std::endl

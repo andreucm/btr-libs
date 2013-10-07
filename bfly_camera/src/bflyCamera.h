@@ -11,7 +11,8 @@ const int BFLY_ERROR = -1;
 const int BFLY_SUCCESS = 1;
 
 //enums
-enum imageModes {MONO8 = 1, RGB8};
+enum bfly_videoMode {MODE0 = 1, MODE1, MODE4, MODE5};
+enum bfly_pixelFormat {MONO8 = 1, RGB8};
 
 
 /** \brief Class for openCV image acquisition from BlackFly Point Grey camera
@@ -27,21 +28,22 @@ class CbflyCamera
             FlyCapture2::PGRGuid guid;            
             FlyCapture2::GigECamera cam;
             FlyCapture2::Image rawImage;  
-            FlyCapture2::GigEImageSettings imageSettings;
+            FlyCapture2::GigEImageSettings imgSettings;
             cv::Mat cvImage;
 
       public:
             CbflyCamera();
             ~CbflyCamera();
-            bool isInitOk();
+            bool isInitOk() const;
             int open();
             int close();
-            int configure(unsigned int imW, unsigned int imH, unsigned int pxFormat);
+            int configure(const bfly_videoMode vMode, const bfly_pixelFormat pxFormat);
+            int configure(const unsigned int streamCh);
             int startAcquisition();
             int stopAcquisition();
             double getFrameRate();
             int getCurrentImage(cv::Mat & img);
             void printCameraInfo();
-            void printImageInfo();
+            void printImageInfo() const;
 };
 #endif

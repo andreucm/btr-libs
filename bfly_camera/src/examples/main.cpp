@@ -6,16 +6,17 @@
 
 //constants
 const int numUserEntries = 2;
-//const unsigned int numImagesDefault = 1000;
 
 //this will be user entries
-const unsigned int imageW = 320;
-const unsigned int imageH = 182;
-const unsigned int pxFormat = RGB8;
+const bfly_videoMode vMode = MODE5;
+const bfly_pixelFormat pxFormat = RGB8;
 
 //main loop 
 int main(int argc, char *argv[])
-{      
+{            
+      //prompt header
+      std::cout << std::endl << "**************** BFLY ACQUISITION PROCESS ******************" << std::endl;
+      
       //check user entries
       if ( argc != numUserEntries )
       {
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
       cv::Mat img;
       unsigned int ii, numImages;
       int retV = 0; 
-            
+      
       //set Window
       cv::namedWindow("rawImage", CV_WINDOW_AUTOSIZE);
       cv::moveWindow("rawImage",20,50);
@@ -41,10 +42,12 @@ int main(int argc, char *argv[])
        
             //opens & configures camera
             retV += camera.open();
-            retV += camera.configure(imageW, imageH, pxFormat);
+            retV += camera.configure(vMode, pxFormat);
             camera.printCameraInfo();
-            retV += camera.startAcquisition();
-            if (retV != 3*BFLY_SUCCESS) return -1;
+            if (retV != 2*BFLY_SUCCESS) return BFLY_ERROR;
+            
+            //starts acquisition
+            if ( camera.startAcquisition() == BFLY_ERROR ) return BFLY_ERROR;
             
             //acquisition loop            
             for (ii=0; ii<numImages; ii++)
@@ -70,5 +73,5 @@ int main(int argc, char *argv[])
             camera.close();
       }
       
-      return 0;
+      return BFLY_SUCCESS;
 }
