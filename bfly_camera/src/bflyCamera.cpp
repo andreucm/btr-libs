@@ -82,85 +82,10 @@ int CbflyCamera::close()
       return BFLY_SUCCESS;    
 }
 
-/*
-int CbflyCamera::configure(const bfly_videoMode vMode, const bfly_pixelFormat pxFormat)
-{
-      FlyCapture2::Format7ImageSettings imgSettings;
-      FlyCapture2::Format7Info fmt7info;
-      FlyCapture2::Format7PacketInfo fmt7infoPacket;
-      bool supported, valid;
-      
-      //Set video mode
-      switch (vMode)
-      {
-            case MODE0: imgSettings.mode = FlyCapture2::MODE_0; break;
-            case MODE1: imgSettings.mode = FlyCapture2::MODE_1; break;
-            case MODE4: imgSettings.mode = FlyCapture2::MODE_4; break;
-            case MODE5: imgSettings.mode = FlyCapture2::MODE_5; break;
-            default: 
-                  std::cout << "CbflyCamera::configure(): Unknown video mode" << std::endl; 
-                  return BFLY_ERROR;
-                  break;
-      }
-      
-      //set pixel format
-      switch (pxFormat)
-      {
-            case MONO8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_MONO8; break;
-            case RGB8: imgSettings.pixelFormat = FlyCapture2::PIXEL_FORMAT_RGB8; break;
-            default:
-                  std::cout << "CbflyCamera::configure(): Unknown pixel format: " << pxFormat << std::endl;
-                  return BFLY_ERROR;
-                  break;
-      }
-      
-      //get max image size, given the video mode
-      fmt7info.mode = imgSettings.mode;
-      pgError = cam.GetFormat7Info( &fmt7info, &supported );
-      if (pgError != FlyCapture2::PGRERROR_OK)
-      {
-            pgError.PrintErrorTrace();
-            return BFLY_ERROR;
-      }
-            
-      //set image size as the maximum allowed, and resets ROI offsets
-      imgSettings.offsetX = 0;
-      imgSettings.offsetY = 0;
-      imgSettings.width = fmt7info.maxWidth;
-      imgSettings.height = fmt7info.maxHeight;
-      
-      //check validity of configuration
-      pgError = cam.ValidateFormat7Settings( &imgSettings, &valid, &fmt7infoPacket );
-      if (pgError != FlyCapture2::PGRERROR_OK)
-      {
-            pgError.PrintErrorTrace();
-            return BFLY_ERROR;
-      }
-      if ( !valid )
-      {
-            std::cout << "CbflyCamera::configure(): Format7 settings are not valid" << std::endl;
-            return BFLY_ERROR;
-      }
-
-      //finally set configuration
-      pgError = cam.SetFormat7Configuration( &imgSettings, fmt7infoPacket.recommendedBytesPerPacket );
-      if (pgError != FlyCapture2::PGRERROR_OK)
-      {
-            pgError.PrintErrorTrace();
-            return BFLY_ERROR;
-      }
-      
-      //return SUCCESS
-      return BFLY_SUCCESS;
-}
-*/
-
 int CbflyCamera::configure(const bfly_videoMode vMode, const bfly_pixelFormat pxFormat)
 {
       FlyCapture2::GigEImageSettingsInfo imgSettingsInfo;
       FlyCapture2::Mode vModeFC2;
-      
-std::cout << "configure(): " << __LINE__ << std::endl;
       
       //Set video mode
       switch (vMode)
