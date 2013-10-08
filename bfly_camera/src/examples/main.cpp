@@ -1,5 +1,7 @@
 
 #include <sstream>
+#include <string>
+#include <vector>
 #include "bflyCamera.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -11,10 +13,11 @@ const int numUserEntries = 4;
 void printUsage()
 {
       std::cout
-            << "Execute as: bflyAcquisition [numImages videoMode pixelFormat]" << std::endl 
+            << "Execute as: bflyAcquisition [numImages videoMode pixelFormat folderName]" << std::endl 
             << "   numImages is a positive integer" << std::endl
             << "   videoMode is one of the following video modes: 0,1,4,5" << std::endl
-            << "   pixelFormat is 0->MONO8 or 1->RGB8" << std::endl;
+            << "   pixelFormat is 0->MONO8 or 1->RGB8" << std::endl
+            << "   folderName where the *.jpg frames will be saved (optional)" << std::endl << std::endl;
 }
 
 //main loop 
@@ -26,12 +29,16 @@ int main(int argc, char *argv[])
       unsigned int numImages;
       bfly_videoMode vMode;
       bfly_pixelFormat pxFormat;
+      bool saveFrames;
+      std::string folderName;
+      std::ostringstream fullFileName;
+      std::vector<int> imwriteParams;
       
       //prompt header
       std::cout << std::endl << "**************** BFLY ACQUISITION PROCESS ******************" << std::endl;
       
-      //check user entries
-      if ( argc != numUserEntries )
+      //check user entries (there is one optional argument)
+      if ( (argc < numUserEntries) || (argc > numUserEntries+1) ) 
       {
             std::cout  << "EXIT due to missing or too many parameters" << std::endl;
             printUsage();
@@ -54,6 +61,18 @@ int main(int argc, char *argv[])
             printUsage();
             return BFLY_ERROR;
       }
+      if (argc == 5) //if optional argument is provided (folder name where frames will be saved)
+      {
+            saveFrames = true;
+            folderName = std::string(argv[4]);
+            if ( folderName.at(folderName.length()-1) != '/') folderName.push_back('/');
+            imwriteParams.push_back(CV_IMWRITE_JPEG_QUALITY);
+            imwriteParams.push_back(100);
+      }
+      else 
+      {
+            saveFrames = false;
+      }
       
       //print user entries
       std::cout 
@@ -61,7 +80,9 @@ int main(int argc, char *argv[])
             << "  Num Images to acquire: " << numImages << std::endl
             << "  Video Mode: " << vMode << std::endl
             << "  Pixel Format: " << pxFormat << std::endl;
-
+      if (saveFrames) std::cout << "  Folder Name: " << folderName << std::endl;
+      else std::cout << "  Folder not provided. Frames will not be saved" << std::endl;
+            
       //create camera and image objects
       CbflyCamera camera;
       cv::Mat img;
@@ -97,6 +118,20 @@ int main(int argc, char *argv[])
                   
                   // show current image
                   cv::imshow("rawImage", img);
+                  
+                  //saves current image
+                  if (saveFrames)
+                  {
+                        fullFileName.str("");
+                        fullFileName.clear();
+                        fullFileName << folderName;
+                        fullFileName.fill('0');
+                        fullFileName.width(6);
+                        fullFileName << ii;
+                        fullFileName.clear();
+                        fullFileName << ".jpg";
+                        cv::imwrite(fullFileName.str(), img, imwriteParams);
+                  }
                   
                   // wait for a key during 1ms
                   cv::waitKey(1); 
