@@ -11,9 +11,9 @@ FIND_LIBRARY(
         PATHS /usr/local/lib/btr_libs
 ) 
 
-IF (bfly_camera_INCLUDE_DIR AND bfly_camera_LIBRARY)
+IF (bfly_camera_INCLUDE_DIRS AND bfly_camera_LIBRARIES)
    SET(bfly_camera_FOUND TRUE)
-ENDIF (bfly_camera_INCLUDE_DIR AND bfly_camera_LIBRARY)
+ENDIF (bfly_camera_INCLUDE_DIRS AND bfly_camera_LIBRARIES)
 
 IF (bfly_camera_FOUND)
    IF (NOT bfly_camera_FIND_QUIETLY)
