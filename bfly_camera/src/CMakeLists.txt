@@ -23,11 +23,11 @@ TARGET_LINK_LIBRARIES(bfly_camera ${OpenCV_LIBS} ${ptgrey_LIBRARIES})
 # install library
 INSTALL(TARGETS bfly_camera
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib/btr_libs
-        ARCHIVE DESTINATION lib/btr_libs)
+        LIBRARY DESTINATION lib/btr-libs
+        ARCHIVE DESTINATION lib/btr-libs)
 
 # install headers
-INSTALL(FILES ${HEADERS} DESTINATION include/btr_headers)
+INSTALL(FILES ${HEADERS} DESTINATION include/btr-headers)
 
 #install Find*.cmake Module
 INSTALL(FILES ../Findbfly_camera.cmake DESTINATION ${CMAKE_ROOT}/Modules/)
