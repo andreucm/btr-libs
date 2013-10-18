@@ -1,0 +1,5 @@
+ADD_EXECUTABLE(trackStampedTest trackStampedTest.cpp)
+ADD_EXECUTABLE(trackerMain trackerMain.cpp)
+
+TARGET_LINK_LIBRARIES(trackStampedTest point_tracker)
+TARGET_LINK_LIBRARIES(trackerMain point_tracker)
