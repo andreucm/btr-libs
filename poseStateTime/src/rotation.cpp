@@ -182,7 +182,7 @@ void Crotation::updateMatrix()
                   mH = cos(ea[0].getAngle()), -sin(ea[0].getAngle()), 0, sin(ea[0].getAngle()), cos(ea[0].getAngle()), 0, 0, 0, 1;
                   mP = cos(ea[1].getAngle()), 0, sin(ea[1].getAngle()), 0, 1, 0, -sin(ea[1].getAngle()), 0, cos(ea[1].getAngle());
                   mR = 1, 0, 0, 0, cos(ea[2].getAngle()), -sin(ea[2].getAngle()), 0, sin(ea[2].getAngle()), cos(ea[2].getAngle());
-                  rM=mH*mP*mR; //rM is the composition of those three rotations
+                  rM=mH*mP*mR; //rM is the composition of these three rotations
                   break;
 
             default: //eulers and quaternion are old, so matrix was ok ! Nothing to do!

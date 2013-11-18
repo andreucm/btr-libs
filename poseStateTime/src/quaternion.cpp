@@ -73,27 +73,45 @@ void Cquaternion::set(const dlib::matrix<double,3,1> qin)
 
 void Cquaternion::set(const dlib::matrix<double,3,3> &rMat)
 {
-      double aux1, aux2;
-      
-      aux1 = 1 + rMat(0,0) + rMat(1,1) + rMat(2,2);
-      aux2 = 1 + rMat(0,0) - rMat(1,1) - rMat(2,2);
-      
-      //to do : check if with this two cases all rottaions are covered ...
-      if ( aux1 > aux2 )
-      {
-            qq(0) = 0.5*sqrt(aux1);
-            qq(1) = (0.25/qq(0))*(rMat(2,1)-rMat(1,2));
-            qq(2) = (0.25/qq(0))*(rMat(0,2)-rMat(2,0));
-            qq(3) = (0.25/qq(0))*(rMat(1,0)-rMat(0,1));
+      double tr, aux;
+
+      // compute quaternion components: 
+      // see http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+      tr = rMat(0,0) + rMat(1,1) + rMat(2,2); //trace
+      if (tr > 0) 
+      { 
+            aux = sqrt(tr+1.0) * 2; // aux=4*q0
+            qq(0) = 0.25 * aux;
+            qq(1) = (rMat(2,1) - rMat(1,2)) / aux;
+            qq(2) = (rMat(0,2) - rMat(2,0)) / aux; 
+            qq(3) = (rMat(1,0) - rMat(0,1)) / aux; 
+      } 
+      else if ( (rMat(0,0) > rMat(1,1)) && (rMat(0,0) > rMat(2,2)) ) 
+      { 
+            aux = sqrt( 1.0 + rMat(0,0) - rMat(1,1) - rMat(2,2) ) * 2; // aux=4*qi 
+            qq(0) = (rMat(2,1) - rMat(1,2)) / aux;
+            qq(1) = 0.25 * aux;
+            qq(2) = (rMat(0,1) + rMat(1,0)) / aux; 
+            qq(3) = (rMat(0,2) + rMat(2,0)) / aux; 
       }
-      else
-      {
-            qq(1) = 0.5*sqrt(aux2);
-            qq(2) = (0.25/qq(1))*(rMat(0,1)+rMat(1,0));
-            qq(3) = (0.25/qq(1))*(rMat(0,2)+rMat(2,0));
-            qq(4) = (0.25/qq(1))*(rMat(2,1)-rMat(1,2));
+      else if ( rMat(1,1) > rMat(2,2) ) 
+      { 
+            aux = sqrt( 1.0 + rMat(1,1) - rMat(0,0) - rMat(2,2) ) * 2; // aux=4*qj
+            qq(0) = (rMat(0,2) - rMat(2,0)) / aux;
+            qq(1) = (rMat(0,1) + rMat(1,0)) / aux; 
+            qq(2) = 0.25 * aux;
+            qq(3) = (rMat(1,2) + rMat(2,1)) / aux; 
+      } 
+      else 
+      { 
+            aux = sqrt( 1.0 + rMat(2,2) - rMat(0,0) - rMat(1,1) ) * 2; // aux=4*qk
+            qq(0) = (rMat(1,0) - rMat(0,1)) / aux;
+            qq(1) = (rMat(0,2) + rMat(2,0)) / aux;
+            qq(2) = (rMat(1,2) + rMat(2,1)) / aux;
+            qq(3) = 0.25 * aux;
       }
-      
+
+      //normalize
       this->normalize();
 }
 
