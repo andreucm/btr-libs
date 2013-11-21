@@ -10,13 +10,9 @@
 #include "dlib/matrix.h"
 
 //poseStateTime
-#include "angle.h"
+#include "rotation.h"
 
 //constants
-static const unsigned int OLD_ANGLES = 0x01;
-static const unsigned int OLD_MATRIX = 0x02;
-static const unsigned int OLD_QUATERNION = 0x04;
-static const unsigned int UPDATED = 0x0;
 static const bool TOTHIS = 0;
 static const bool TOREF = 1;
 
@@ -64,79 +60,38 @@ struct lookAtValues
 */
 class Cpose3d
 {
-	protected:
+	public:
             /** \brief location point
              * 
-             * Location: x,y,z
+             * x,y,z coordinates of the frame center with respect to the reference frame
              * 
              */
-            dlib::matrix<double,3,1> xyz;
+            dlib::matrix<double,3,1> pt;
             
-		/** \brief Heading
+		/** \brief Rotation
 		 * 
-		 * Heading angle. First rotation, in z axis. Heading is in (-pi, pi].
+		 * Rotation of this frame (this pose) with respect to the reference frame
 		 * 
 		*/
-		Cangle hh; 
+		Crotation rt; 
 
-		/** \brief Pitch
-		 * 
-		 * Pitch angle. Second rotation, in the new (once rotated) y axis. Pitch is in (-pi/2, pi/2].
-		 * 
-		*/
-		Cangle pp; 
-
-		/** \brief Roll
-		 * 
-		 * Roll angle. Third rotation, in the new (twice rotated) x axis. Roll is in (-pi, pi].
-		 * 
-		*/
-		Cangle rr; 
-		
-		/** \brief Rotation matrix
-		 * 
-		 * Full rotation matrix representing the orientation of the position referenced to a given coordinate frame
-		 * It holds in its columns the normalized coordinates of the three axis (forward, left, up) in terms of a given coordinate frame
-		 * 
-		*/
-		Matrix3f mR;
-            
-            /** \brief Unit quaternion
-             * 
-             * quaternion representation of the orientation wrt the world coordiate frame  
-             * 
-             **/
-            Cquaternion qt;            
-
-		/**
-		 * \brief Status value to synchronize rotation representations
-		 * 
-		 * pStatus allows internal synchronization of euler angles, matrix and quaternion rotation representations. It has the following values:
-             *    - OLD_ANGLES: Euler representation has not been updated from the last matrix / quaternion operation
-             *    - OLD_MATRIX: Matrix representation has not been updated from the last euler angle / quaternion operation
-             *    - OLD_QUATERNION: Quaternion representation has not been updated from the last euler angle / matrix operation
-             *    - UPDATED: All three representations are synchronized
-		 * 
-		*/
-		unsigned int pStatus;
-		
-	public:
+      public:
 		/**
 		 * \brief Constructor without coordinates
 		 * 
 		 * Constructor without coordinates. xx,yy,zz are initialized to (0,0,0) and oreintation angles to 0.
 		 * 
 		*/		
-		Cposition3d();
+		Cpose3d();
 		
 		/**
 		 * \brief Constructor with coordinates
 		 * 
-		 * Constructor with coordinates. Position is initialized to (x0,y0,z0) location and (h0,p0,r0) orientation angles (heading, pitch and roll)
+		 * Constructor with coordinates. Position is initialized to (x0,y0,z0) point, and rotation given by Euler angles (heading, pitch, roll)
 		 * By default, angles should be provided in radians. To pass angle values in degrees, set rd parameter to "inDEGREES".
 		 * 
 		*/		
-		Cposition3d(double cx, double cy, double cz, double ah, double ap, double ar, bool rd=inRADIANS);
+		Cpose3d(double x0, double y0, double z0, double eaH, double eaP, double eaR, bool rd=inRADIANS);
 		
 		/**
 		 * \brief Destructor
@@ -144,196 +99,72 @@ class Cpose3d
 		 * Destructor
 		 * 
 		*/		
-		virtual ~Cposition3d();
+		virtual ~Cpose3d();
 
-		/**
-		 * \brief Set heading
+		/** \brief Set pose from a Cpose argument
 		 * 
-		 * Sets heading angle. By default, heading should be provided in radians. To pass heading in degrees, set rd parameter to "inDEGREES".
-		 * 
-		*/		
-		void setH(double ah, bool rd=inRADIANS); 
-		
-		/**
-		 * \brief Set pitch
-		 * 
-		 * Sets pitch angle. By default, pitch should be provided in radians. To pass pitch in degrees, set rd parameter to "inDEGREES".
+		 * Set this pose from a Cpose argument
+             * May imply updating pose.rt.rM if it was not updated
 		 * 
 		*/		
-		void setP(double ap, bool rd=inRADIANS); 
-		
-		/**
-		 * \brief Set roll
-		 * 
-		 * Sets roll angle. By default, roll should be provided in radians. To pass roll in degrees, set rd parameter to "inDEGREES".
-		 * 
-		*/		
-		void setR(double ar, bool rd=inRADIANS); 
-		
-		/**
-		 * \brief Set Euler angles
-		 * 
-		 * Sets heading, pitch and roll angles. By default, angles should be provided in radians. To pass angles in degrees, set rd parameter to "inDEGREES".
-		 * Heading, pitch and roll follows respectively Euler convention ZYX. 
-		 * 
-		*/		
-		void setHPR(double ah, double ap, double ar, bool rd=inRADIANS);
+		void setPose(Cpose3d & pose);
 
-		/**
-		 * \brief Set full position
+		/** \brief Set pose from ptQuat vector
 		 * 
-		 * Sets point coordinates and euler angles heading, pitch and roll. By default, angles should be provided in radians. To pass angles in degrees, set rd parameter to "inDEGREES".
-		 * Heading, pitch and roll follows respectively Euler convention ZYX. 
-		 * 
-		*/		
-		void setFullPose(double cx, double cy, double cz, double ah, double ap, double ar, bool rd=inRADIANS);
-		
-		/**
-		 * \brief Set position by coordinates
-		 * 
-		 * Sets full position from pose coordinates
+		 * Set position from ptQuat vector. 
+             * ptQuat is a column 6-vector as: [x y z qi qj qk]', so real part of quaternion is set to fulfill |rt.qt|=1
 		 * 
 		*/		
-		void setFullPose(Cposition3d *pose);
+		void setPose(const dlib::matrix<double,6,1> & ptQuat);
 
-		/**
-		 * \brief Set position by coordinates
+		/** \brief Set pose from Homogeneous matrix
 		 * 
-		 * Sets full position from pose coordinates
-		 * 
-		*/		
-		void setFullPose(Cposition3d & pose);
-
-		/**
-		 * \brief Set position by matrix
-		 * 
-		 * Sets full position from matrix values
+		 * Set position from Homogeneous matrix provided by argument hM
 		 * 
 		*/		
-		void setFullPoseByMatrix(Cposition3d *pose);
-
-		/**
-		 * \brief Set position by matrix
+            void setPose(const dlib::matrix<double,4,4> & hM);
+            
+            /** \brief Get pose as a ptQuat vector
+             * 
+             * Get pose as a ptQuat vector
+             * ptQuat is set as a column 6-vector as: [x y z qi qj qk]'
+             * May imply updating pose.rt.qt if it was not updated
+             * 
+            */                      
+            void getPtQuat(dlib::matrix<double,6,1> & ptQuat);
+            
+		/** \brief Get 4x4 homogeneous matrix
 		 * 
-		 * Sets full position from matrix values
-		 * 
-		*/		
-		void setFullPoseByMatrix(Cposition3d & pose);
-
-		/**
-		 * \brief Set position by vectors 
-		 * 
-		 * Sets x,y,z and sets rotation matrix with the forward and left vectors expressed as eigen vectors. Up vector is then derived as: up = fw x lft 
-		 * 
-		*/		
-		void setFullPose( Vector3f &xyzV, Vector3f &fwV, Vector3f &lfV);
-
-		/**
-		 * \brief Set position by vectors 
-		 * 
-		 * Sets x,y,z and sets rotation matrix with the forward and left vectors expressed by its coordinate values. Up vector is then derived as: up = fw x lft.
+		 * Get 4x4 homogeneous matrix
+             * May imply updating pose.rt.rM if it was not updated
 		 * 
 		*/		
-		void setFullPose(double cx, double cy, double cz, double fwx, double fwy, double fwz, double lfx, double lfy, double lfz);
-
-		/**
-		 * \brief Set position by Homogeneous matrix
-		 * 
-		 * Sets x,y,z and rotation  matrix mR from the homogeneous matrix H.
-		 * 
-		*/		
-		void setHomogeneous(Matrix4f *H);
+		void getHomMat(dlib::matrix<double,4,4> & hM);
 		
-		/**
-		 * \brief Set orientation from quaternion
+		/** \brief Get LookAt parameters
 		 * 
-		 * Sets rotation matrix from quaternion
-		 * 
-		*/		
-		void setQuaternion(const double qReal, const double qi, const double qj, const double qk);
-		
-		/**
-		 * \brief Get heading 
-		 * 
-		 * Gets heading value. By default angle is returned in radians. Set rd parameter to "inDEGREES" is returned value is required in degrees.
+		 * Get LookAt parameters: "eye", "at" and "up" 
+             * May imply updating pose.rt.rM if it was not updated
 		 * 
 		*/		
-		double getH(bool rd=inRADIANS); 
+		void getLookAtValues(lookAtValues & lav);
 
-		/**
-		 * \brief Get pitch
+		/** \brief Get pt-Fwd-Left vectors 
 		 * 
-		 * Gets pitch value. By default angle is returned in radians. Set rd parameter to "inDEGREES" is returned value is required in degrees.
+		 * Sets vv as the concatenation of the components of this->pt , forward axiz and left axis.
+             * May imply updating pose.rt.rM if it was not updated
 		 * 
 		*/		
-		double getP(bool rd=inRADIANS); 
+		void getPtFwLf(double & vv[9]); 
 		
-		/**
-		 * \brief Get roll
+		/** \brief Forward motion
 		 * 
-		 * Gets roll value. By default angle is returned in radians. Set rd parameter to "inDEGREES" is returned value is required in degrees.
-		 * 
-		*/		
-		double getR(bool rd=inRADIANS);
-		
-		/**
-		 * \brief Get homogeneous matrix
-		 * 
-		 * Sets H matrix as the homogeneous transformation matrix representing this position.
-		 * 
-		*/		
-		void getHomogeneous(Matrix4f *H); /**returns to H the homogeneous coordinate version of mR*/
-		
-		/**
-		 * \brief Get LookAt
-		 * 
-		 * Sets lav data struct with the "look at" parameters  representing this position.
-		 * 
-		*/		
-		void getLookAtValues(lookAtValues *lav);
-
-		/**
-		 * \brief Get xyzFwdLeft vectors 
-		 * 
-		 * Sets vv as the concatenation of the components of point location, forward and left vectors. vv should have 9 memory free double positions.
-		 * 
-		*/		
-		void getXYZFwLf(double *vv); 
-		
-		/**
-		 * \brief Get quaternion
-		 * 
-		 * Gets quaternion parameters from orientation matrix
-		 * 
-		*/		
-		void getQuaternion(double &qReal, double &qi, double &qj, double &qk);
-		
-		/**
-		 * \brief Forward motion
-		 * 
-		 * Moves forward the position dd units. Forward direction is indicated by the forward vector, that is the first column of the rotation matrix
+		 * Moves forward the position dd units. 
+             * Forward direction is indicated by the forward vector, that is the first column of the rotation matrix
 		 * 
 		*/		
 		void moveForward(double dd);
-
-		/**
-		 * \brief Axis rotation
-		 * 
-		 * Rotate position by alpha radians along the axis defined by (ux,uy,uz). Axis coordinated are referenced to the same frame as position
-		 * To express rotation in degrees, set rd boolean to "inDEGREES"
-		 * 
-		*/		
-		void rotateUaxis(double alpha, double ux, double uy, double uz, bool rd=inRADIANS);
-		
-		/**
-		 * \brief z-Axis rotation
-		 * 
-		 * Rotate position by alpha radians along the position z-axis. This implements a vehicle head-turn motion.
-		 * To express rotation in degrees, set rd boolean to "inDEGREES"
-		 * 
-		*/		
-		void turnZaxis(double alpha, bool rd=inRADIANS);
-
+/*******************************************************************************/
 		/**
 		 * \brief Transofrm point
 		 *
@@ -405,21 +236,5 @@ class Cpose3d
 		*/																						
 		void operator=(Cposition3d & pose);
 
-	protected:
-		/**
-		 * \brief Update rotation matrix from Euler angles
-		 * 
-		 * Computes rotation matrix from current Euler angles.
-		 *
-		*/																						
-		void updateRmatrix();
-
-		/**
-		 * \brief Update Euler angles from rotation matrix
-		 * 
-		 * Computes Euler angles from current rotation matrix.
-		 *
-		*/																						
-		void updateEulerAngles();
 };
 #endif

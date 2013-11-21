@@ -225,7 +225,7 @@ class Crotation
             /**
              * \brief Assignement operator
              * 
-             * Copy is done through matrix, then updating eulers and quaterinion
+             * Copy is done through matrix, then updating eulers and quaternion
              * May imply updating rt.rM if it was not updated
              *
             */                                                                                                                                  
