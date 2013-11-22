@@ -142,6 +142,14 @@ class Crotation
              * 
             */          
             void setQuaternion(const Cquaternion & quat);
+
+            /** \brief Set rotation by quaternion
+             * 
+             * Sets rotation from a quaternion providing only imaginary vector. 
+             * It assumes unit quaternion to set the real part
+             * 
+            */          
+            void setQuaternion(const dlib::matrix<double,3,1> & qijk);
             
             /** \brief Get heading 
              * 
@@ -178,12 +186,28 @@ class Crotation
             
             /** \brief Get quaternion
              * 
-             * Gets the quaterinion, returned at quat argument
+             * Gets the quaternion, returned at quat argument
              * May imply updating quaternion if it was not updated
              * 
             */          
             void getQuaternion(Cquaternion & quat);
             
+            /** \brief Get quaternion
+             * 
+             * Gets the quaternion, returned as a 3-vector of the imaginary components
+             * May imply updating quaternion if it was not updated
+             * 
+            */          
+            void getQuaternion(dlib::matrix<double,3,1> & quat);
+            
+            /** \brief Get quaternion
+             * 
+             * Gets the quaternion, returned as a 4-vector. First component is real, then ijk
+             * May imply updating quaternion if it was not updated
+             * 
+            */          
+            void getQuaternion(dlib::matrix<double,4,1> & quat);
+
             /** \brief Gets axis angle representation
              * 
              * Gets axis angle representation 

@@ -51,7 +51,7 @@ void Cquaternion::set(const double q1, const double q2, const double q3)
 	qq(1) = q1;
 	qq(2) = q2;
 	qq(3) = q3;
-      quadSum = q1*q1-q2*q2-q3*q3;
+      quadSum = q1*q1+q2*q2+q3*q3;
       if (quadSum < 1) qq(0) = sqrt(1-quadSum);	
       else
       {

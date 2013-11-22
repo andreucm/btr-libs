@@ -13,8 +13,8 @@
 #include "rotation.h"
 
 //constants
-static const bool TOTHIS = 0;
-static const bool TOREF = 1;
+static const bool FROM_THIS_TO_REF = 0;
+static const bool FROM_REF_TO_THIS = 1;
 
 /** \brief LookAt struct
  *
@@ -34,29 +34,25 @@ struct lookAtValues
 
 /** \brief Positions in 3D space: point+orientation
  *
- * Cposition3d class implements data structure and functions to manipulate positions in a 3D space. It can be used also to represent coordinate frames.
+ * Cpose3d class implements data structure and functions to manipulate poses or coordinate frames in 3D space. 
  *
- * Positions are composed by location and orientation:
- *	- LOCATION: x,y,z are the coordinates where the position is placed. Inherited from Cpoint3d class. 
- *
- *    - ORIENTATION: This class holds three representations of the orientation:
- *		- Euler angles ZYX representation: heading (hh), pitch (pp) and roll(rr)
- *		- Full rotation matrix
- *          - Quaternion
+ * Poses are composed by location point and a rotation:
+ *	- LOCATION: pt is a 3.vector expressing x,y,z coordinates of the point where the pose is placed.
+ *    - ROTATION: rt is a Crotation object representing the rotation as Euler angles, rot matrix or quaternion
  *	
+ * Conventions are:
+ *    - Euler angles follow the ZYX convention, named heading, pitch and roll.
+ *    - Rotation matrix hold the frame unit vectors in their columns. First column is X axis, second Y axis and third Z axis.
+ *    - First element of quaternions, qq(0), is the real part. Then qq(1),qq(2),qq(3) are i,j,k respectively.
+ *
  * ZYX convention for the Euler angles means:
  * 	- First rotation is heading (h) in z axis, in (-pi, pi]
  *	- Second rotation is pitch (p) in the new (once rotated) y axis, in (-pi/2, pi/2]
  *	- Third rotation is roll (r) in the new (twice rotated) x axis, in (-pi, pi]
- *
  * With this convention, the rotation matrix mR is: mR=mh*mp*mr. The mR matrix has in each column the coordinates of "this" frame axis wrt the fixed/world frame.
  * 
- * To synchronize this three representations, an integer "pStatus" is used with the following "OR" values:
- *	- OLD_ANGLES: Euler representation has not been updated from the last matrix / quaternion operation
- *	- OLD_MATRIX: Matrix representation has not been updated from the last euler angle / quaternion operation
- *    - OLD_QUATERNION: Quaternion representation has not been updated from the last euler angle / matrix operation
- *	- UPDATED: All three representations are synchronized
- *
+ * Both point location and rotation are expressed with respect to an arbitrary frame, called by convention REFERENCE. 
+ * 
 */
 class Cpose3d
 {
@@ -91,7 +87,7 @@ class Cpose3d
 		 * By default, angles should be provided in radians. To pass angle values in degrees, set rd parameter to "inDEGREES".
 		 * 
 		*/		
-		Cpose3d(double x0, double y0, double z0, double eaH, double eaP, double eaR, bool rd=inRADIANS);
+		Cpose3d(const double x0, const double y0, const double z0, const double eaH, const double eaP, const double eaR, const bool rd=inRADIANS);
 		
 		/**
 		 * \brief Destructor
@@ -104,7 +100,7 @@ class Cpose3d
 		/** \brief Set pose from a Cpose argument
 		 * 
 		 * Set this pose from a Cpose argument
-             * May imply updating pose.rt.rM if it was not updated
+             * May imply updating this->rt.rM if it was not updated
 		 * 
 		*/		
 		void setPose(Cpose3d & pose);
@@ -136,26 +132,26 @@ class Cpose3d
 		/** \brief Get 4x4 homogeneous matrix
 		 * 
 		 * Get 4x4 homogeneous matrix
-             * May imply updating pose.rt.rM if it was not updated
+             * May imply updating this->rt.rM if it was not updated
 		 * 
 		*/		
-		void getHomMat(dlib::matrix<double,4,4> & hM);
+		void getHmat(dlib::matrix<double,4,4> & hM);
 		
 		/** \brief Get LookAt parameters
 		 * 
 		 * Get LookAt parameters: "eye", "at" and "up" 
-             * May imply updating pose.rt.rM if it was not updated
+             * May imply updating this->rt.rM if it was not updated
 		 * 
 		*/		
-		void getLookAtValues(lookAtValues & lav);
+		void getLookAt(lookAtValues & lav);
 
-		/** \brief Get pt-Fwd-Left vectors 
-		 * 
-		 * Sets vv as the concatenation of the components of this->pt , forward axiz and left axis.
-             * May imply updating pose.rt.rM if it was not updated
-		 * 
-		*/		
-		void getPtFwLf(double & vv[9]); 
+// 		/** \brief Get pt-Fwd-Left vectors 
+// 		 * 
+// 		 * Sets vv as the concatenation of the components of this->pt , forward axiz and left axis.
+//              * May imply updating this->rt.rM if it was not updated
+// 		 * 
+// 		*/		
+// 		void getPtFwLf(double & vv[9]); 
 		
 		/** \brief Forward motion
 		 * 
@@ -164,77 +160,58 @@ class Cpose3d
 		 * 
 		*/		
 		void moveForward(double dd);
-/*******************************************************************************/
-		/**
-		 * \brief Transofrm point
+
+		/** \brief Transofrm point
 		 *
 		 * Transforms point coordinates, following targetFrame value:
-		 *	- TOTHIS: Point qq is initially expressed in terms of reference frame and is transformed to be in terms of "this" frame
-		 *	- TOREF:  Point qq is initially expressed in terms of "this" frame and is transformed to be in terms of reference frame
-		 * 
+		 *	- FROM_REF_TO_THIS: Assumes point aa is initially expressed in terms of reference frame and is transformed to be in terms of "this" frame
+		 *	- FROM_THIS_TO_REF: Assumes point aa is initially expressed in terms of "this" frame and is transformed to be in terms of reference frame
+		 * May imply updating this->rt.rM if it was not updated
 		*/		
-		void coordTr(Cpoint3d *qq, bool targetFrame);
+		void trf(dlib::matrix<double,3,1> & aa, const bool targetFrame);
 		
-		/**
-		 * \brief Transofrm position
-		 *
-		 * Transforms position coordinates, following targetFrame value:
-		 *	- TOTHIS: Position ff is initially expressed in terms of reference frame and is transformed to be in terms of "this" frame
-		 *	- TOREF:  Position ff is initially expressed in terms of "this" frame and is transformed to be in terms of reference frame
+		/** \brief Transofrm pose
+             *
+		 * Transforms pose coordinates, following targetFrame value:
+		 *	- FROM_REF_TO_THIS: Assumes pose po is initially expressed in terms of reference frame and is transformed to be in terms of "this" frame
+		 *	- FROM_THIS_TO_REF: Assumes pose po is initially expressed in terms of "this" frame and is transformed to be in terms of reference frame
 		 * 
+             * May imply updating this->rt.rM if it was not updated
 		*/		
-		void coordTr(Cposition3d *ff, bool targetFrame);
+		void trf(Cpose3d & po, const bool targetFrame);
 
-		/**
-		 * \brief Transofrm position
+		/** \brief Transofrm pose
 		 *
 		 * Transforms position coordinates, following targetFrame value:
-		 *	- TOTHIS: Position ffIn is expressed in terms of reference frame and ffOut in terms of "this" frame
-		 *	- TOREF:  Position ffIn is expressed in terms of "this" frame and is ffOut in terms of reference frame
-		 * 
+		 *	- FROM_REF_TO_THIS: Pose poIn is expressed in terms of reference frame and poOut in terms of "this" frame
+		 *	- FROM_THIS_TO_REF: Pose poIn is expressed in terms of "this" frame and is poOut in terms of reference frame
+		 *
+             * May imply updating this->rt.rM  and poIn.rt.rM if they were not updated
 		*/		
-		void coordTr(Cposition3d *ffIn, Cposition3d *ffOut, bool targetFrame);
+		void trf(Cpose3d & poIn, Cpose3d & poOut, const bool targetFrame);
 		
-		/**
-		* \brief Rotate position following the twist
+		/** \brief Rotate this pose following the twist
 		*
-		* Rotates position following the twist. Twist is expressed as a group of three (heading,pitch,roll) angular increments.
+		* Rotates position following the twist. 
+            * Twist is expressed as a group of three (heading,pitch,roll) angular increments.
 		* 
 		*/
-		void twist(double deltaH, double deltaP, double deltaR);
+		void twist(const double deltaH, const double deltaP, const double deltaR);
 
-		//not debugged. May be they can be definetively replaced by deltaHeading(double alpha)
-		//void incTheta(const double & deltaThRads);
-		//double deltaTheta(Cposition3d & posB);
-
-		/**
-		 * \brief print position
+		/** \brief print pose
 		 * 
-		 * Prints position in a single row, following the format "(x,y,z,h,p,r)". Angles are in radians or degrees according rd boolean (rad by default).
+		 * Prints pose in a single row, following the format "(x,y,z,h,p,r,qr,qi,qj,qk,m00,m01,m02,m10,..,m22)". 
+             * Angles are in radians or degrees according rd boolean (radians by default).
+             * 
+             * May imply updating this->rt.rM, this->rt.ea and/or this->rt.qt
 		*/		
-		void printPosition(bool rd=inRADIANS);
+		void printPose(bool rd=inRADIANS);
 
-		/**
-		 * \brief print orientation
+		/** \brief Assignement operator
 		 * 
-		 * Prints orientation in a single row, following the format "h=hh; p=pp; r=rr)". Angles are in radians or degrees according rd boolean (rad by default).
-		*/		
-		void printAttitude(bool rd=inRADIANS);
-
-		/**
-		 * \brief print orientation
-		 * 
-		 * Prints the 3x3 rotation matrix. 
-		*/		
-		void printRmatrix();
-
-		/**
-		 * \brief Assignement operator
-		 * 
-		 * Calls setFullPose(pose).
+		 * Calls setPose(Cpose3d & pose).
 		 *
 		*/																						
-		void operator=(Cposition3d & pose);
-
+		void operator=(Cpose3d & pose);
 };
 #endif

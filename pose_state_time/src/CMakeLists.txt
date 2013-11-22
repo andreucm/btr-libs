@@ -10,6 +10,7 @@ SET(SRCS
       angle.cpp
       quaternion.cpp
       rotation.cpp
+      pose3d.cpp
 #       vqState.cpp
 #       vqStateTs.cpp
 #       wState.cpp           
@@ -20,22 +21,23 @@ SET(HEADERS
       angle.h
       quaternion.h
       rotation.h
+      pose3d.h
 #       vqState.h
 #       vqStateTs.h        
 #       wState.h
 )
 
 # create the shared library
-ADD_LIBRARY(poseStateTime SHARED ${SRCS})
+ADD_LIBRARY(pose_state_time SHARED ${SRCS})
 
 #install 
-INSTALL(TARGETS poseStateTime
+INSTALL(TARGETS pose_state_time
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib/pipeGuard
-        ARCHIVE DESTINATION lib/pipeGuard)
+        LIBRARY DESTINATION lib/btr-libs
+        ARCHIVE DESTINATION lib/btr-libs)
 
-INSTALL(FILES ${HEADERS} DESTINATION include/pipeGuard)
+INSTALL(FILES ${HEADERS} DESTINATION include/btr-headers)
 
-INSTALL(FILES ../FindposeStateTime.cmake DESTINATION ${CMAKE_ROOT}/Modules/)
+INSTALL(FILES ../Findpose_state_time.cmake DESTINATION ${CMAKE_ROOT}/Modules/)
 
 ADD_SUBDIRECTORY(examples)

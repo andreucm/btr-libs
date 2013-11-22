@@ -30,13 +30,16 @@ Crotation::~Crotation()
 
 void Crotation::setEuler(const double hh, const double pp, const double rr, const bool rd)
 {
+      double pp2=pp;
+      
       //sets heading. setAngle() assures angle will be in (-pi,pi] interval
       ea[0].setAngle(hh,rd);
       
       //pitch angle has to be in (-pi/2,pi/2] interval
-      double pp2 = pp-M_PI*round(pp/M_PI);
+      if ( rd==inDEGREES ) pp2 = pp2*M_PI/180.;
+      pp2 = pp2-M_PI*round(pp2/M_PI);
       if (pp2==-M_PI){pp2=M_PI;} //special case to keep the interval as (-pi,pi]
-      ea[1].setAngle(pp2,rd);
+      ea[1].setAngle(pp2,inRADIANS);
   
       //sets roll. setAngle() assures angle will be in (-pi,pi] interval
       ea[2].setAngle(rr,rd);
@@ -54,6 +57,12 @@ void Crotation::setMatrix(const dlib::matrix<double,3,3> & mat)
 void Crotation::setQuaternion(const Cquaternion & quat)
 {
       qt = quat;
+      rStatus = OLD_EULER | OLD_MATRIX;      
+}
+
+void Crotation::setQuaternion(const dlib::matrix<double,3,1> & qijk)
+{
+      qt.set(qijk);
       rStatus = OLD_EULER | OLD_MATRIX;      
 }
 
@@ -85,6 +94,19 @@ void Crotation::getQuaternion(Cquaternion & quat)
 {
       if ( rStatus & OLD_QUATERNION ) updateQuaternion();
       quat = this->qt;
+}
+
+void Crotation::getQuaternion(dlib::matrix<double,3,1> & quat)
+{
+      if ( rStatus & OLD_QUATERNION ) updateQuaternion();
+      quat = this->qt.qq(1),this->qt.qq(2),this->qt.qq(3);//return only the imaginary part
+      //quat = dlib::subm(this->qt.qq,range(1,3),range(0,0));//return only the imaginary part
+}
+
+void Crotation::getQuaternion(dlib::matrix<double,4,1> & quat)
+{
+      if ( rStatus & OLD_QUATERNION ) updateQuaternion();
+      quat = this->qt.qq;
 }
 
 void Crotation::getAxisAngle(dlib::matrix<double,3,1> &axis, double & angle)
