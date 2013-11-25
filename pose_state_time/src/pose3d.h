@@ -202,10 +202,11 @@ class Cpose3d
 		 * 
 		 * Prints pose in a single row, following the format "(x,y,z,h,p,r,qr,qi,qj,qk,m00,m01,m02,m10,..,m22)". 
              * Angles are in radians or degrees according rd boolean (radians by default).
+             * Finishes the line with std::endl if endLine is set to true (default)
              * 
              * May imply updating this->rt.rM, this->rt.ea and/or this->rt.qt
 		*/		
-		void printPose(bool rd=inRADIANS);
+		void printPose(const bool rd=inRADIANS, const bool endLine = true);
 
 		/** \brief Assignement operator
 		 * 

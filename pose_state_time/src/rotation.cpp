@@ -30,19 +30,8 @@ Crotation::~Crotation()
 
 void Crotation::setEuler(const double hh, const double pp, const double rr, const bool rd)
 {
-      double pp2=pp;
-      
-      //sets heading. setAngle() assures angle will be in (-pi,pi] interval
-      ea[0].setAngle(hh,rd);
-      
-      //pitch angle has to be in (-pi/2,pi/2] interval
-      if ( rd==inDEGREES ) pp2 = pp2*M_PI/180.;
-      pp2 = pp2-M_PI*round(pp2/M_PI);
-      if (pp2==-M_PI){pp2=M_PI;} //special case to keep the interval as (-pi,pi]
-      ea[1].setAngle(pp2,inRADIANS);
-  
-      //sets roll. setAngle() assures angle will be in (-pi,pi] interval
-      ea[2].setAngle(rr,rd);
+      //sets angles
+      setEulerWithoutStatusUpdate(hh, pp, rr, rd);
       
       //update status
       rStatus = OLD_MATRIX | OLD_QUATERNION;
@@ -119,19 +108,21 @@ void Crotation::rotateUaxis(const double alpha, double ux, double uy, double uz,
 {
       dlib::matrix<double,3,3> P, Q, I, R;
       dlib::matrix<double,3,1> uu;
-      double ar; //angle in radians
+      double ar, aux; //angle in radians
 
       //check if matrix is updated and rad/deg option
       if ( rStatus & OLD_MATRIX ) updateMatrix();
       
       //set angle in radians whatever the input choice
       if ( rd == inRADIANS ) ar = alpha;
-      else ar=alpha*M_PI/180.0;
-            
+      else ar=alpha*M_PI/180.0;//inDEGREES
+      
       //updates rM matrix with Rodrigue's formula 
-      uu = ux, uy, uz;
+      aux = sqrt(ux*ux+uy*uy+uz*uz);
+      uu = ux/aux, uy/aux, uz/aux;
       P = uu*trans(uu);
-      Q = 0, -uz, uy, uz, 0, -ux, -uy, ux, 0;
+      //Q = 0, -uz, uy, uz, 0, -ux, -uy, ux, 0;
+      Q = 0, -uu(2), uu(1), uu(2), 0, -uu(0), -uu(1), uu(0), 0;
       I = dlib::identity_matrix(dlib::matrix<double>(3,3));
       R=P+(I-P)*cos(ar)+Q*sin(ar);
       rM=R*rM;
@@ -170,20 +161,48 @@ void Crotation::operator=(Crotation & rt)
       this->updateQuaternion();
 }
 
+void Crotation::setEulerWithoutStatusUpdate(const double hh, const double pp, const double rr, const bool rd)
+{
+      ea[0].setAngle(hh,rd);
+      ea[1].setAngle(pp,rd);
+      ea[2].setAngle(rr,rd);      
+}
+
 void Crotation::updateEuler()
 {
       dlib::matrix<double,3,1> lny, lnz, ys;
       double aux; 
+      double hh, pp, rr;
 
       //first check if matrix is updated
       if ( rStatus & OLD_MATRIX ) updateMatrix();
       
-      //compute eulers from matrix
-      this->ea[0] = atan2( rM(1,0) , rM(0,0) );//heading
-      aux = rM(0,0)*rM(0,0)+rM(1,0)*rM(1,0);
-      this->ea[1] = -atan2( rM(2,0) , aux/sqrt(aux) );//pitch
-      this->ea[2] = atan2( rM(2,1)*aux-rM(2,0)*(rM(0,0)*rM(0,1)+rM(1,0)*rM(1,1)) , rM(0,0)*rM(1,1)-rM(1,0)*rM(0,1) ); //roll
-      rStatus &= ( 0xFFFF & ~(OLD_EULER) );//resets OLD_EULER bit
+      //check for gimbal lock situation (forward axis is pointing downwards or upwards)
+      if ( fabs(this->rM(2,0)-1) < EPSILON ) //forward axis pointing upwards
+      {
+            hh = this->ea[0].getAngle(); //keeps the old heading value
+            pp = -M_PI/2;//pitch
+            rr = atan2(-this->rM(0,1),this->rM(1,1))-hh;//left axis at xy plane marks roll
+      }           
+      else if ( fabs(this->rM(2,0)+1) < EPSILON ) //forward axis pointing downwards
+      {
+            hh = this->ea[0].getAngle(); //keeps the old heading value
+            pp = M_PI/2;//pitch
+            rr = -atan2(-this->rM(0,1),this->rM(1,1))-hh;//left axis at xy plane marks roll
+      }
+      else
+      {
+            hh = atan2( rM(1,0) , rM(0,0) );//heading
+            aux = rM(0,0)*rM(0,0)+rM(1,0)*rM(1,0);
+            pp = -atan2( rM(2,0) , sqrt(aux) );//pitch
+            rr = atan2( rM(2,1)*aux-rM(2,0)*(rM(0,0)*rM(0,1)+rM(1,0)*rM(1,1)) , rM(0,0)*rM(1,1)-rM(1,0)*rM(0,1) ); //roll
+      }
+      
+      //sets angles assuring range correctness
+      setEulerWithoutStatusUpdate(hh,pp,rr);            
+            
+      //Updates status by resetting OLD_EULER bit
+      rStatus &= ( 0xFFFF & ~(OLD_EULER) );
 }
 
 void Crotation::updateMatrix()

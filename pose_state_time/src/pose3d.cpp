@@ -114,7 +114,7 @@ void Cpose3d::moveForward(double dd)
       //moves point according forward axis (first column)
       this->pt(0) += rMat(0,0)*dd;
       this->pt(1) += rMat(1,0)*dd;
-      this->pt(1) += rMat(2,0)*dd;
+      this->pt(2) += rMat(2,0)*dd;
 }
 
 void Cpose3d::trf(dlib::matrix<double,3,1> & aa, const bool targetFrame)
@@ -158,7 +158,7 @@ void Cpose3d::twist(const double deltaH, const double deltaP, const double delta
       this->rt.setEuler(this->rt.head()+deltaH, this->rt.pitch()+deltaP, this->rt.roll()+deltaR);
 }
 
-void Cpose3d::printPose(bool rd)
+void Cpose3d::printPose(const bool rd, const bool endLine)
 {
       dlib::matrix<double,3,3> rMat;
       dlib::matrix<double,4,1> quat;
@@ -173,7 +173,8 @@ void Cpose3d::printPose(bool rd)
                   << quat(0) << " " << quat(1) << " " << quat(2) << " " << quat(3) << " "
                   << rMat(0,0) << " " << rMat(0,1) << " " << rMat(0,2) << " " 
                   << rMat(1,0) << " " << rMat(1,1) << " " << rMat(1,2) << " " 
-                  << rMat(2,0) << " " << rMat(2,1) << " " << rMat(2,2) << std::endl;
+                  << rMat(2,0) << " " << rMat(2,1) << " " << rMat(2,2);
+      if (endLine) std::cout << std::endl;
 }
 
 void Cpose3d::operator=(Cpose3d & pose)

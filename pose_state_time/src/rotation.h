@@ -18,6 +18,7 @@ static const unsigned short OLD_EULER = 0x01;
 static const unsigned short OLD_MATRIX = 0x02;
 static const unsigned short OLD_QUATERNION = 0x04;
 static const unsigned short UPDATED = 0x0;
+static const double EPSILON = 1e-12;
 
 /** \brief Rotations in 3D space
  *
@@ -88,8 +89,7 @@ class Crotation
             */          
             Crotation();
             
-            /**
-             * \brief Constructor with euler angles
+            /** \brief Constructor with euler angles
              * 
              * Constructor with euler angles (euler convention ZYX), provided with the order: heading, pitch and roll
              * By default, angles should be provided in radians. To pass angle in degrees, set rd parameter to "inDEGREES".
@@ -97,34 +97,32 @@ class Crotation
             */          
             Crotation(const double hh, const double pp, const double rr, const bool rd=inRADIANS);
 
-            /**
-             * \brief Constructor with rM matrix
+            /** \brief Constructor with rM matrix
              * 
              * Constructor with rotation matrix
              * 
             */          
             Crotation(const dlib::matrix<double,3,3> & mat);
             
-            /**
-             * \brief Constructor with quaternion
+            /** \brief Constructor with quaternion
              * 
              * Constructor with quaterinion
              * 
             */          
             Crotation(const Cquaternion & quat);
 
-            /**
-             * \brief Destructor
+            /** \brief Destructor
              * 
              * Destructor
              * 
             */          
             virtual ~Crotation();
 
-            /** \brief Set rottaion by Euler angles
+            /** \brief Set rotation by Euler angles
              * 
              * Set euler angles (euler convention ZYX), provided with the order: heading, pitch and roll 
              * By default, angles should be provided in radians. To pass angle in degrees, set rd parameter to "inDEGREES".
+             * Pitch (pp) angle required in [-pi,pi] interval ( [-90,90] if inDEGREES )
              * 
             */          
             void setEuler(const double hh, const double pp, const double rr, const bool rd=inRADIANS);
@@ -175,8 +173,7 @@ class Crotation
             */          
             double roll(bool rd=inRADIANS);
             
-            /**
-             * \brief Get rotation matrix
+            /** \brief Get rotation matrix
              * 
              * Gets the rotation matrix, returned at mat argument
              * May imply updating matrix if it was not updated
@@ -226,8 +223,7 @@ class Crotation
             */          
             void rotateUaxis(const double alpha, double ux, double uy, double uz, bool rd=inRADIANS);
             
-            /**
-             * \brief Heading rotation
+            /** \brief Heading rotation
              * 
              * Rotate frame by alpha radians along "this" z-axis, implementing a vehicle heading turn.
              * To express rotation in degrees, set rd boolean to "inDEGREES"
@@ -246,8 +242,7 @@ class Crotation
             */          
             void print(const bool rd=inRADIANS);
 
-            /**
-             * \brief Assignement operator
+            /** \brief Assignement operator
              * 
              * Copy is done through matrix, then updating eulers and quaternion
              * May imply updating rt.rM if it was not updated
@@ -256,6 +251,15 @@ class Crotation
             void operator=(Crotation & rt);
 
       protected:
+            /** \brief Set rotation by Euler angles. Does not update status
+             * 
+             * Set euler angles (euler convention ZYX), provided with the order: heading, pitch and roll 
+             * By default, angles should be provided in radians. To pass angle in degrees, set rd parameter to "inDEGREES".
+             * Does not update the status
+             * 
+            */          
+            void setEulerWithoutStatusUpdate(const double hh, const double pp, const double rr, const bool rd=inRADIANS);             
+            
             /** \brief Update Euler angles from rotation matrix
              * 
              * Computes Euler angles from current rotation matrix.
@@ -276,5 +280,6 @@ class Crotation
              *
             */                                                                                                                                  
             void updateQuaternion();         
+            
 };
 #endif
