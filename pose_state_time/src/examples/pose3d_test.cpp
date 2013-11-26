@@ -9,7 +9,7 @@ int main(int argc, char** argv)
       dlib::matrix<double,4,4> hM;
       dlib::matrix<double,6,1> pqv;
       lookAtValues lav;
-      dlib::matrix<double,3,1> pt1;
+      dlib::matrix<double,3,1> aa;
       unsigned int ii;
       
       //test switch
@@ -24,6 +24,7 @@ int main(int argc, char** argv)
                   p1.printPose(inDEGREES);
 
                   p1.getHmat(hM); 
+                  //std::cout << hM << std::endl;
                   p2.setPose(hM);
                   p2.printPose(inDEGREES);
                   
@@ -78,23 +79,61 @@ int main(int argc, char** argv)
 
             case 4:
                   std::cout << std::endl << "******************** TEST 4 ****************************" << std::endl;
-                  //transform functions
+                  //transform point
 
                   p1.pt = 1.,1.,1.;
                   p1.rt.setEuler(45.,45.,45.,inDEGREES);
-                  pt1 = 0.5,1,-1;
                   for (ii=1; ii<=500; ii++)
                   {
-                        pt1 = 0.5,1,-1;
+                        aa = 0.5,-1,-0.5;
                         p1.moveForward(0.05*cos(ii/100.));
                         p1.rt.rotateUaxis(2,-ii/100.,ii/50.,-ii/200., inDEGREES);
-                        p1.printPose(inDEGREES,false);
-                        //std::cout << pt1(0) << " " << pt1(1) << " " << pt1(2) << " ";
-                        p1.trf(pt1, FROM_THIS_TO_REF);
-                        std::cout << " " << pt1(0) << " " << pt1(1) << " " << pt1(2) << std::endl;
+                        p1.trf(aa, FROM_THIS_TO_REF);
+                        p1.printPose(inDEGREES,false);//without endl
+                        std::cout << " " << aa(0) << " " << aa(1) << " " << aa(2) << std::endl;
                   }
                   
                   break;
+
+            case 5:
+                  std::cout << std::endl << "******************** TEST 5 ****************************" << std::endl;
+                  //transform pose 1
+
+                  p1.pt = 1.,1.,1.;
+                  p1.rt.setEuler(45.,45.,45.,inDEGREES);
+                  for (ii=1; ii<=10; ii++)
+                  {
+                        p2.pt = 0.5,-1.,1.5;
+                        p2.rt.setEuler(45*cos(ii/10.),30*cos(ii/20.),60*cos(ii/30.),inDEGREES);
+                        p1.moveForward(0.05*cos(ii/100.));
+                        p1.rt.rotateUaxis(3,-ii/100.,ii/50.,-ii/200., inDEGREES);
+                        p1.trf(p2, FROM_THIS_TO_REF);
+                        p1.printPose(inDEGREES,false);//without endl
+                        std::cout << " ";
+                        p2.printPose(inDEGREES,true);//with endl                        
+                  }
+                  
+            case 6:
+                  std::cout << std::endl << "******************** TEST 6 ****************************" << std::endl;
+                  //transform pose 2
+
+                  p1.pt = 1.,1.,1.;
+                  p1.rt.setEuler(45.,45.,45.,inDEGREES);
+                  for (ii=1; ii<=10; ii++)
+                  {
+                        p2.pt = 0.5,-1.,1.5;
+                        p2.rt.setEuler(45*cos(ii/10.),30*cos(ii/20.),60*cos(ii/30.),inDEGREES);
+                        p1.moveForward(0.05*cos(ii/100.));
+                        p1.rt.rotateUaxis(3,-ii/100.,ii/50.,-ii/200., inDEGREES);
+                        
+                        p1.trf(p2, p3,FROM_THIS_TO_REF);
+                        p2.printPose(inDEGREES);                 
+                        p1.trf(p3,FROM_REF_TO_THIS);
+                        p3.printPose(inDEGREES);                                         
+                  }
+                                    
+                  break;
+                  
                   
             default:
                   break;
