@@ -72,16 +72,14 @@ class Cpose3d
 		Crotation rt; 
 
       public:
-		/**
-		 * \brief Constructor without coordinates
+		/** \brief Constructor without coordinates
 		 * 
 		 * Constructor without coordinates. xx,yy,zz are initialized to (0,0,0) and oreintation angles to 0.
 		 * 
 		*/		
 		Cpose3d();
 		
-		/**
-		 * \brief Constructor with coordinates
+		/** \brief Constructor with coordinates
 		 * 
 		 * Constructor with coordinates. Position is initialized to (x0,y0,z0) point, and rotation given by Euler angles (heading, pitch, roll)
 		 * By default, angles should be provided in radians. To pass angle values in degrees, set rd parameter to "inDEGREES".
@@ -89,8 +87,7 @@ class Cpose3d
 		*/		
 		Cpose3d(const double x0, const double y0, const double z0, const double eaH, const double eaP, const double eaR, const bool rd=inRADIANS);
 		
-		/**
-		 * \brief Destructor
+		/** \brief Destructor
 		 * 
 		 * Destructor
 		 * 

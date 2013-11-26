@@ -20,8 +20,8 @@ Cpose3d::~Cpose3d()
 
 void Cpose3d::setPose(Cpose3d & pose)
 {
-      this->pt = pose.pt;
-      this->rt = pose.rt;
+      this->pt = pose.pt; //point
+      this->rt = pose.rt; //rotation
 }
 
 void Cpose3d::setPose(const dlib::matrix<double,6,1> & ptQuat)
