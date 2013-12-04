@@ -11,7 +11,7 @@ SET(SRCS
       quaternion.cpp
       rotation.cpp
       pose3d.cpp
-#       vqState.cpp
+      vqState.cpp
 #       vqStateTs.cpp
 #       wState.cpp           
 )
@@ -22,7 +22,7 @@ SET(HEADERS
       quaternion.h
       rotation.h
       pose3d.h
-#       vqState.h
+      vqState.h
 #       vqStateTs.h        
 #       wState.h
 )

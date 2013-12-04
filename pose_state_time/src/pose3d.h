@@ -1,6 +1,6 @@
 
-#ifndef position3d_H
-#define position3d_H
+#ifndef pose3d_H
+#define pose3d_H
 
 //std
 #include <iostream>
@@ -9,7 +9,7 @@
 //dlib
 #include "dlib/matrix.h"
 
-//poseStateTime
+//pose_state_time lib
 #include "rotation.h"
 
 //constants
