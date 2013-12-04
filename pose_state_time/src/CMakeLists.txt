@@ -12,7 +12,7 @@ SET(SRCS
       rotation.cpp
       pose3d.cpp
       vqState.cpp
-#       vqStateTs.cpp
+      vqStateTs.cpp
 #       wState.cpp           
 )
 
@@ -23,7 +23,7 @@ SET(HEADERS
       rotation.h
       pose3d.h
       vqState.h
-#       vqStateTs.h        
+      vqStateTs.h        
 #       wState.h
 )
 

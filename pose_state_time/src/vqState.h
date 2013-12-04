@@ -48,7 +48,7 @@ class CvqState
 		 * constructor with object arguments
 		 * 
 		 **/		
-		CvqState(const dlib::matrix<double,3,1> vel, const Cquaternion & quat);
+		CvqState(const dlib::matrix<double,3,1> & vel, const Cquaternion & quat);
 
             /** \brief Constructor with raw arguments
             * 

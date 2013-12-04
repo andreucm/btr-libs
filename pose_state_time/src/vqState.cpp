@@ -6,7 +6,7 @@ CvqState::CvqState()
 	qt.qq(0) = 1;
 }
 
-CvqState::CvqState(const dlib::matrix<double,3,1> vel, const Cquaternion & quat)
+CvqState::CvqState(const dlib::matrix<double,3,1> & vel, const Cquaternion & quat)
 {
 	vv = vel;
 	qt = quat;
@@ -69,7 +69,7 @@ void CvqState::operator=(const CvqState & vq)
 	this->qt = vq.qt;
 }
 
-void CvqState::operator=(const dlib::matrix<double,6,1> & vq)
+void CvqState::operator=(const dlib::matrix<double,VQ_STATE_DIMENSION,1> & vq)
 {
 	this->vv = vq(0),vq(1),vq(2);
 	this->qt.set(vq(3),vq(4),vq(5));	
