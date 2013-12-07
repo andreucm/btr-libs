@@ -13,7 +13,7 @@
  * Number of vq states which form the window state
  * 
  **/
-const unsigned int WINDOW_STATE_SIZE = 20; 
+const unsigned int WINDOW_STATE_SIZE = 10; 
 
 /** \brief Window state
  * 

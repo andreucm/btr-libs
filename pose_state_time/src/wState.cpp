@@ -85,7 +85,7 @@ void CwState::getTransform(const CtimeStamp & t0, const CtimeStamp & te, Cpose3d
       winSt.ws.push_back(vqSt);
       
       //debug: print winSt
-      winSt.print();
+      //winSt.print();
       
       //2. Compute transform
       
@@ -99,7 +99,7 @@ void CwState::getTransform(const CtimeStamp & t0, const CtimeStamp & te, Cpose3d
       
       //2b. Here, trv is in terms of reference. Rotate to be in terms of wState(t0)
       ws.at(0).qt.getMatrix(rM); //rotation matrix at t0
-      rMinv = dlib::inv(rM)
+      rMinv = dlib::inv(rM);
       pose.pt = rMinv*trv;
       
       //2c. rotation part
