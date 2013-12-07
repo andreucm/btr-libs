@@ -13,7 +13,7 @@ SET(SRCS
       pose3d.cpp
       vqState.cpp
       vqStateTs.cpp
-#       wState.cpp           
+      wState.cpp           
 )
 
 SET(HEADERS 
@@ -24,7 +24,7 @@ SET(HEADERS
       pose3d.h
       vqState.h
       vqStateTs.h        
-#       wState.h
+      wState.h
 )
 
 # create the shared library
