@@ -55,9 +55,9 @@ void CwState::getTransform(const CtimeStamp & t0, const CtimeStamp & te, Cpose3d
       
       //find ws indexes corresponding to time stamps t0 and te
       ii0 = 0;
-      while(ws[ii0].ts < t0) ii0++;
+      while(ws[ii0].ts <= t0) ii0++;
       iie = ii0;
-      while(ws[iie].ts <= te) iie++;
+      while(ws[iie].ts < te) iie++;
       
       //1.set winSt with vqStates inside [t0,te]. 
       
@@ -85,7 +85,7 @@ void CwState::getTransform(const CtimeStamp & t0, const CtimeStamp & te, Cpose3d
       winSt.ws.push_back(vqSt);
       
       //debug: print winSt
-      //winSt.print();
+      winSt.print();
       
       //2. Compute transform
       
@@ -97,13 +97,13 @@ void CwState::getTransform(const CtimeStamp & t0, const CtimeStamp & te, Cpose3d
             trv += winSt.ws[ii].vv*dT;
       }
       
-      //2b. Here, trv is in terms of reference. Rotate to be in terms of wState(t0)
-      ws.at(0).qt.getMatrix(rM); //rotation matrix at t0
+      //2b. Here, trv is in terms of reference. Rotate to be in terms of ws(t0)=winSt(0)
+      winSt.ws.at(0).qt.getMatrix(rM); //rotation matrix at t0
       rMinv = dlib::inv(rM);
       pose.pt = rMinv*trv;
       
       //2c. rotation part
-      ws.back().qt.getMatrix(rM); //rotation matrix at te
+      winSt.ws.back().qt.getMatrix(rM); //rotation matrix at te
       pose.rt.setMatrix(rMinv*rM);
       
 }
