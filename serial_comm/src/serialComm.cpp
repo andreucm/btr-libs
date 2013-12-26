@@ -68,6 +68,106 @@ int CserialComm::closeSerial()
       return SERIAL_SUCCESS;
 }
 
+int CserialComm::configureParity(const byteParity bp)
+{
+      int retValue;
+      termios ttySettings;
+
+      //set flags
+      tcgetattr(serialCommId, &ttySettings);
+      switch(bp)
+      {
+            case BYTE_8N1: 
+                  ttySettings.c_cflag &= ~PARENB;
+                  ttySettings.c_cflag &= ~CSTOPB;
+                  ttySettings.c_cflag &= ~CSIZE;
+                  ttySettings.c_cflag |= CS8;                  
+                  break;
+            case BYTE_7E1: 
+                  ttySettings.c_cflag |= PARENB;
+                  ttySettings.c_cflag &= ~PARODD;
+                  ttySettings.c_cflag &= ~CSTOPB;
+                  ttySettings.c_cflag &= ~CSIZE;
+                  ttySettings.c_cflag |= CS7;                  
+                  break;
+            case BYTE_7O1: 
+                  ttySettings.c_cflag |= PARENB;
+                  ttySettings.c_cflag |= PARODD;
+                  ttySettings.c_cflag &= ~CSTOPB;
+                  ttySettings.c_cflag &= ~CSIZE;
+                  ttySettings.c_cflag |= CS7;                  
+                  break;
+            default:
+                  std::cout << "Unknown Byte Parity mode" << std::endl;
+                  return SERIAL_ERROR;
+                  break;                  
+      }
+
+      //configure serial port with the flags
+      retValue = tcsetattr(serialCommId, TCSANOW, &ttySettings); 
+      if ( retValue < 0 )
+      {
+            std::cout << "Error Configuring Byte Parity on Serial Communications: " << portName << std::endl;
+            return SERIAL_ERROR;
+      }
+      else
+      {
+            std::cout << "Success Configuring Byte Parity" << std::endl;
+            return SERIAL_SUCCESS;
+      }
+}
+
+int CserialComm::configureBaudRate(const baudRate br)
+{
+      int retValue;
+      termios ttySettings;
+
+      //set flags
+      tcgetattr(serialCommId, &ttySettings);
+      switch(br)
+      {
+            case BAUD_0: 
+                  cfsetispeed(&ttySettings, B0);
+                  cfsetospeed(&ttySettings, B0);
+                  break;
+            case BAUD_50: 
+                  cfsetispeed(&ttySettings, B50);
+                  cfsetospeed(&ttySettings, B50);
+                  break;
+            case BAUD_1200: 
+                  cfsetispeed(&ttySettings, B1200);
+                  cfsetospeed(&ttySettings, B1200);
+                  break;
+            case BAUD_4800: 
+                  cfsetispeed(&ttySettings, B4800);
+                  cfsetospeed(&ttySettings, B4800);
+                  break;
+            case BAUD_9600: 
+                  cfsetispeed(&ttySettings, B9600);
+                  cfsetospeed(&ttySettings, B9600);
+                  break;
+            case BAUD_19200: 
+                  cfsetispeed(&ttySettings, B19200);
+                  cfsetospeed(&ttySettings, B19200);
+                  break;
+            case BAUD_38400: 
+                  cfsetispeed(&ttySettings, B38400);
+                  cfsetospeed(&ttySettings, B38400);
+                  break;
+            case BAUD_115200: 
+                  cfsetispeed(&ttySettings, B115200);
+                  cfsetospeed(&ttySettings, B115200);
+                  break;
+            default: 
+                  std::cout << "Error Configuring Baud Rate: Unknown Baud Rate." << std::endl;
+                  return SERIAL_ERROR;
+                  break;                  
+      }
+
+      std::cout << "Success Configuring Baud Rate" << std::endl;      
+      return SERIAL_SUCCESS;
+}
+
 int CserialComm::readSerial(unsigned char & inChar)
 {
       std::vector<unsigned char> ch;
@@ -109,7 +209,7 @@ int CserialComm::readSerial(const unsigned int nBytes, std::vector<unsigned char
             timeout2.tv_sec = timeout1.tv_sec;
             timeout2.tv_usec = timeout1.tv_sec;
                               
-            //blocking read up to an input arrives to some channel indicated by fdset
+            //blocking read up to an input arrives to some channel indicated by fdset, or timeout 
             selectResult = select(serialCommId+1, &fdSet, NULL, NULL, &timeout2);
 
             //select returns 0 if timeout, 1 if input available, -1 if error.
@@ -172,7 +272,7 @@ void CserialComm::printRaw() const
 
 }
 
-void CserialComm::printConfig() const
+void CserialComm::printOldConfig() const
 {
       std::cout << "ttySettings.c_cflag: " << ttySettingsOld.c_cflag << std::endl;
       std::cout << "ttySettings.c_iflag: " << ttySettingsOld.c_iflag << std::endl;
@@ -191,50 +291,26 @@ int CserialComm::basicConfigure()
       //gets current config
       tcgetattr(serialCommId, &ttySettings);
       
-      //Set desired options
-      
-      //baud rates
-//       cfsetispeed(&ttySettings, B9600);
-//       cfsetospeed(&ttySettings, B9600);
-      
       //control modes: baud rate, ignores modem control line, enables receiver, character size mask 7, enables parity on input and output
-      ttySettings.c_cflag = ( B9600 | CLOCAL | CREAD | CS8);// | PARENB);
-//       ttySettings.c_cflag &= ~CSIZE; //Mask the character size bits
-//       ttySettings.c_cflag |= ( B9600 | CLOCAL | CREAD | CS8);// | PARENB); 
-      
-      //8N1
-//       ttySettings.c_cflag &= ~PARENB;
-//       ttySettings.c_cflag &= ~CSTOPB;
-//       ttySettings.c_cflag &= ~CSIZE;
-//       ttySettings.c_cflag |= CS8;
+      ttySettings.c_cflag = ( B9600 | CLOCAL | CREAD | CS8);
       
       //input modes: Ignores break condition, enables parity checking, 
       ttySettings.c_iflag = 0x0;//( IGNBRK );//| INPCK ); 
-//       ttySettings.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
+      //ttySettings.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
       
       //output modes 
       ttySettings.c_oflag = 0x0;
       
       //local modes
       ttySettings.c_lflag = 0x0;
-//       ttySettings.c_lflag &= ~(ICANON | ECHO | ISIG);
-//       ttySettings.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+      //ttySettings.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
       
-      //        
+      //Min characters to read: 1; Max timeout 100*10 seconds
       ttySettings.c_cc[VMIN]=1;
       ttySettings.c_cc[VTIME]=100;
       
       //Sets configuration immediately.
       retValue = tcsetattr(serialCommId, TCSANOW, &ttySettings); 
-      if ( retValue < 0 )
-      {
-            //std::cout << "Error configuring serial communications; Id: " << serialCommId << std::endl << std::endl;
-            return SERIAL_ERROR;
-      }
-      else
-      {
-            //std::cout << "Success configuring serial communications" << std::endl << std::endl;
-            return SERIAL_SUCCESS;
-      }
-
+      if ( retValue < 0 ) return SERIAL_ERROR;
+      else return SERIAL_SUCCESS;
 }

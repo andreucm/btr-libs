@@ -19,6 +19,8 @@
 const int SERIAL_ERROR = -1;
 const int SERIAL_SUCCESS = 1;
 const double DEFAULT_TIMEOUT = 3.;
+enum byteParity {BYTE_8N1 = 1, BYTE_7E1, BYTE_7O1}; 
+enum baudRate {BAUD_0 = 0, BAUD_50, BAUD_1200, BAUD_4800, BAUD_9600, BAUD_19200, BAUD_38400, BAUD_115200}; 
 
 
 /** \brief Class for serial communications read/write
@@ -37,13 +39,15 @@ class CserialComm
             CserialComm();
             ~CserialComm();
             int openSerial(const std::string & name);
+            int configureParity(const byteParity bp);
+            int configureBaudRate(const baudRate br);
             int closeSerial();
             int readSerial(unsigned char & inChar); 
             int readSerial(const unsigned int nBytes, std::vector<unsigned char> & data, const double waitTime = DEFAULT_TIMEOUT);
             int writeSerial(const unsigned char byte);
             int writeSerial(const std::vector<unsigned char> & data);
             void printRaw() const;
-            void printConfig() const;
+            void printOldConfig() const;
 
       protected:
             int basicConfigure();

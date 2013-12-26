@@ -21,6 +21,12 @@ int main(int argc, char *argv[])
       //open and configure serial comms
       retVal = mySerial.openSerial(portName);
       
+      //configure byte parity on serial comms
+      retVal = mySerial.configureParity(BYTE_8N1);
+      
+      //configure baud rate
+      retVal = mySerial.configureBaudRate(BAUD_9600);
+      
       //configure user input. Important! ( please see http://www.cplusplus.com/forum/general/5304/ )
       tcgetattr( STDIN_FILENO, &stdInOldSettings );
       stdInNewSettings = stdInOldSettings;
