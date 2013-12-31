@@ -171,7 +171,7 @@ int CserialComm::configureBaudRate(const baudRate br)
 int CserialComm::readSerial(unsigned char & inChar)
 {
       std::vector<unsigned char> ch;
-      if ( readSerial(1,ch,DEFAULT_TIMEOUT) == SERIAL_SUCCESS )
+      if ( readSerial(ch,1,DEFAULT_TIMEOUT) == SERIAL_SUCCESS )
       {
             inChar = ch.at(0);
             return SERIAL_SUCCESS;
@@ -182,9 +182,11 @@ int CserialComm::readSerial(unsigned char & inChar)
       }
 }
  
-int CserialComm::readSerial(const unsigned int nBytes, std::vector<unsigned char> & data, const double waitTime)
+int CserialComm::readSerial(std::vector<unsigned char> & data, const unsigned int nBytes, const double waitTime, const bool untilEndByte, const unsigned char endByte)
 {
-      bool loopError = false; 
+      bool loop = true; 
+      int retValue; 
+      //bool runReading = true;
       unsigned int nn = 0;//bytes already read
       unsigned char inChar;
       int selectResult;
@@ -199,7 +201,8 @@ int CserialComm::readSerial(const unsigned int nBytes, std::vector<unsigned char
       timeout1.tv_usec = (unsigned int)( (waitTime - floor(waitTime))*1e6 );
 
       //reading loop
-      while ( (nn < nBytes) && (!loopError) )
+      //while ( (nn < nBytes) && (!loopError) )
+      while ( loop )
       {
             //reset fdSet for serial reception
             FD_ZERO(&fdSet);
@@ -216,7 +219,8 @@ int CserialComm::readSerial(const unsigned int nBytes, std::vector<unsigned char
             switch (selectResult)
             {
                   case 0: 
-                        loopError = true;  
+                        loop = false;  
+                        retValue = SERIAL_ERROR;
                         std::cout << "CserialComm: Time Out Comm Error on serial Id=" << serialCommId << std::endl;
                         break;
                   case 1:
@@ -226,25 +230,36 @@ int CserialComm::readSerial(const unsigned int nBytes, std::vector<unsigned char
                               {
                                     data.push_back(inChar);
                                     nn++;
-                                    //std::cout << "nn: " << nn << "; inChar: " << inChar << std::endl;
+                                    if ( nn == nBytes ) //check if nBytes have been reached
+                                    {
+                                          loop = false;
+                                          retValue= SERIAL_SUCCESS;
+                                          //std::cout << "readSerial(): nn: " << nn << "; " << __LINE__ << std::endl;
+                                    }
+                                    if ( (untilEndByte) && (inChar == endByte ) ) //check if current byte marks end byte
+                                    {
+                                          loop = false;
+                                          retValue= SERIAL_SUCCESS;
+                                    }
                               }
                               else
                               {
-                                    loopError = true;  
+                                    loop = false;  
+                                    retValue = SERIAL_ERROR;
                                     std::cout << "CserialComm: read() error on fd=" << serialCommId << std::endl;
                               }
                         }
                         break;
                   default: //-1 and others
-                        loopError = true;  
+                        loop = false;  
+                        retValue = SERIAL_ERROR;
                         std::cout << "CserialComm: read() error on fd=" << serialCommId << std::endl;
                         break;
             }
       }
       
       //return value 
-      if (loopError) return SERIAL_ERROR;
-      else return SERIAL_SUCCESS;
+      return retValue;
 }
 
 int CserialComm::writeSerial(const unsigned char byte)

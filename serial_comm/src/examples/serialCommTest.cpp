@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
             retVal = mySerial.writeSerial(userChar);
             
             //read response
-            retVal = mySerial.readSerial(18,dataReceived,3);
+            retVal = mySerial.readSerial(dataReceived,100,3,true,'\n');
       
             //print response
             for (ii=0; ii<dataReceived.size(); ii++) std::cout << dataReceived.at(ii); 
