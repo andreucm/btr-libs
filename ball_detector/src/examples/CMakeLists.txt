@@ -1,0 +1,2 @@
+ADD_EXECUTABLE(ballDetector_test  ballDetector_test.cpp)
+TARGET_LINK_LIBRARIES(ballDetector_test ball_detector)
