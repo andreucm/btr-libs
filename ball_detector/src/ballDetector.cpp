@@ -39,9 +39,10 @@ void CballDetector::setInputImage(const cv::Mat & inIm)
 	inImage = inIm.clone();	
 }
 
-void CballDetector::getOutputImage(cv::Mat & outIm) const
+void CballDetector::getOutputImage(cv::Mat & outIm)
 {
-	outIm = outImage.clone();	
+      this->drawOutputImage();
+      outIm = outImage.clone();	            
 }
 
 void CballDetector::houghDetection()
@@ -70,26 +71,45 @@ void CballDetector::houghDetection()
       }
 }
 
+void CballDetector::drawOutputImage()
+{
+      cv::Point center;
+      int radius;
+      size_t ii;
+      
+      //draws results to output Image
+      outImage = inImage.clone();
+      for( ii = 0; ii < circles.size(); ii++ )
+      {
+            if ( circles[ii][0] != -1 )
+            {
+                  center = cv::Point(cvRound(circles[ii][0]), cvRound(circles[ii][1]));
+                  radius = cvRound(circles[ii][2]);
+                  cv::circle( outImage, center, 5, cv::Scalar(0,0,255), -1, 8, 0 );// circle center in green
+                  cv::circle( outImage, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );// circle outline in red
+            }
+      }      
+}
+
 void CballDetector::displayOutput()
 {
-	cv::Point center;
-	int radius;
-	size_t ii;
 	cv::Mat outImageFlip;
-	
-	//draws results to output Image
-	outImage = inImage.clone();
-	for( ii = 0; ii < circles.size(); ii++ )
-	{
-		if ( circles[ii][0] != -1 )
-		{
-			center = cv::Point(cvRound(circles[ii][0]), cvRound(circles[ii][1]));
-			radius = cvRound(circles[ii][2]);
-			cv::circle( outImage, center, 5, cv::Scalar(0,0,255), -1, 8, 0 );// circle center in green
-			cv::circle( outImage, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );// circle outline in red
-		}
-	}
+      
+      this->drawOutputImage();
 	cv::flip(outImage,outImageFlip, 1);
 	cv::imshow("ballDetector", outImageFlip);
 	cv::waitKey(1);
+}
+
+void CballDetector::printConfig() const
+{
+      std::cout << "Detetctor Configuration:" << std::endl 
+            << "    gaussian_blur_size: " << params.gaussian_blur_size << std::endl
+            << "    gaussian_blur_sigma: " << params.gaussian_blur_sigma << std::endl
+            << "    canny_edge_th: " << params.canny_edge_th << std::endl
+            << "    hough_accum_resolution: " << params.hough_accum_resolution << std::endl
+            << "    min_circle_dist: " << params.min_circle_dist << std::endl
+            << "    hough_accum_th: " << params.hough_accum_th << std::endl
+            << "    min_radius: " << params.min_radius << std::endl
+            << "    max_radius: " << params.max_radius << std::endl;
 }

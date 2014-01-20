@@ -7,17 +7,17 @@ FIND_PACKAGE(OpenCV REQUIRED)
 INCLUDE_DIRECTORIES(. ${OpenCV_INCLUDE_DIR})
 
 # application source files
-SET(sources 
+SET(SRCS 
 	ballDetector.cpp
 )
 
 # application header files
-SET(headers 
+SET(HEADERS 
 	ballDetector.h
 )
 
 # create the executable file
-ADD_LIBRARY(ball_detector SHARED ${sources})
+ADD_LIBRARY(ball_detector SHARED ${SRCS})
 
 # link necessary libraries
 TARGET_LINK_LIBRARIES(ball_detector ${OpenCV_LIBS})

@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 
       //config detector
       ballDetector.setDefaultParameters();
+      ballDetector.printConfig();
       
 	//main loop
 	while (running)

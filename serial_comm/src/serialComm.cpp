@@ -87,6 +87,7 @@ int CserialComm::configureParity(const byteParity bp)
                   ttySettings.c_cflag |= PARENB;
                   ttySettings.c_cflag &= ~PARODD;
                   ttySettings.c_cflag &= ~CSTOPB;
+                  //ttySettings.c_cflag |= CSTOPB;
                   ttySettings.c_cflag &= ~CSIZE;
                   ttySettings.c_cflag |= CS7;                  
                   break;
@@ -221,7 +222,7 @@ int CserialComm::readSerial(std::vector<unsigned char> & data, const unsigned in
                   case 0: 
                         loop = false;  
                         retValue = SERIAL_ERROR;
-                        std::cout << "CserialComm: Time Out Comm Error on serial Id=" << serialCommId << std::endl;
+                        std::cout << "CserialComm: Time Out read error on serial Id=" << serialCommId << std::endl;
                         break;
                   case 1:
                         if( FD_ISSET(serialCommId,&fdSet) ) //check if input was at serialCommId
@@ -246,14 +247,14 @@ int CserialComm::readSerial(std::vector<unsigned char> & data, const unsigned in
                               {
                                     loop = false;  
                                     retValue = SERIAL_ERROR;
-                                    std::cout << "CserialComm: read() error on fd=" << serialCommId << std::endl;
+                                    std::cout << "CserialComm: read error on fd=" << serialCommId << std::endl;
                               }
                         }
                         break;
                   default: //-1 and others
                         loop = false;  
                         retValue = SERIAL_ERROR;
-                        std::cout << "CserialComm: read() error on fd=" << serialCommId << std::endl;
+                        std::cout << "CserialComm: read error on fd=" << serialCommId << std::endl;
                         break;
             }
       }

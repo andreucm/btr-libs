@@ -1,13 +1,13 @@
 FIND_PATH(
-        bfly_camera_INCLUDE_DIRS 
-        NAMES bflyCamera.h
-        PATHS /usr/local/include/btr-headers
+      bfly_camera_INCLUDE_DIRS 
+      NAMES bflyCamera.h
+      PATHS /usr/local/include/btr-headers
 )
 
 FIND_LIBRARY(
-        bfly_camera_LIBRARIES
-        NAMES bfly_camera
-        PATHS /usr/local/lib/btr-libs
+      bfly_camera_LIBRARIES
+      NAMES bfly_camera
+      PATHS /usr/local/lib/btr-libs
 ) 
 
 IF (bfly_camera_INCLUDE_DIRS AND bfly_camera_LIBRARIES)

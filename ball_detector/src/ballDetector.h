@@ -31,7 +31,7 @@ struct detectorConfig
       int gaussian_blur_size;//size of gaussian blur kernel mask [pixel]
       double gaussian_blur_sigma; //sigma of gaussian blur kernel mask [pixel]
       double canny_edge_th; //threshold of the edge detector. 
-      double hough_accum_resolution;  //resolution of the Hough accumulator, in terms of ratio of image resolution
+      double hough_accum_resolution;  //resolution of the Hough accumulator, in terms of inverse ratio of image resolution
       double min_circle_dist; //Minimum distance between circles 
       double hough_accum_th; //accumulator threshold to decide circle detection
       int min_radius; //minimum circle radius allowed
@@ -120,7 +120,7 @@ class CballDetector
 		 * Gets output image (this->outImage)
 		 * 
 		 **/		
-		void getOutputImage(cv::Mat & outIm) const;
+		void getOutputImage(cv::Mat & outIm);
 		
 		/**
 		 * 
@@ -131,11 +131,25 @@ class CballDetector
 		 **/
 		void houghDetection();
 		
+            /**
+             * 
+             * Draws circles to the output image
+             * 
+             **/
+            void drawOutputImage();
+            
 		/**
 		 * 
 		 * Displays output image
 		 * 
 		 **/
 		void displayOutput();
+            
+            /**
+             * 
+             * Prints current configuration parameter values to std out
+             * 
+             **/
+            void printConfig() const; 
 };
 #endif
