@@ -45,7 +45,7 @@ void CballDetector::getOutputImage(cv::Mat & outIm)
       outIm = outImage.clone();	            
 }
 
-void CballDetector::houghDetection()
+void CballDetector::houghDetection(const unsigned int imgEncoding)
 {
 	cv::Mat grayImage;
 	cv::vector<cv::Vec3f> circlesCurrent;
@@ -53,8 +53,8 @@ void CballDetector::houghDetection()
 	//clear previous circles
  	circles.clear();
 	
-	// Convert input image to gray
-	cv::cvtColor( inImage, grayImage, CV_BGR2GRAY );
+	// If input image is RGB, convert it to gray 
+      if ( imgEncoding == IMG_RGB8 ) cv::cvtColor(inImage, grayImage, CV_BGR2GRAY);
 
 	//Reduce the noise so we avoid false circle detection
 	cv::GaussianBlur( grayImage, grayImage, cv::Size(params.gaussian_blur_size, params.gaussian_blur_size), params.gaussian_blur_sigma );
@@ -89,6 +89,24 @@ void CballDetector::drawOutputImage()
                   cv::circle( outImage, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );// circle outline in red
             }
       }      
+}
+
+unsigned int CballDetector::howManyCircles() const
+{
+      return circles.size();
+}
+
+int CballDetector::getCircle(const unsigned int ii, double & xx, double & yy, double & rr) const
+{
+      if ( ii >= circles.size() ) 
+            return -1;
+      else
+      {
+            xx = circles[ii][0];
+            yy = circles[ii][1];
+            rr = circles[ii][2];
+            return 1;
+      }
 }
 
 void CballDetector::displayOutput()

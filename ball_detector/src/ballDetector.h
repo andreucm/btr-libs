@@ -18,7 +18,8 @@ const double MIN_CIRCLE_DIST_DEFAULT = 30;
 const double HOUGH_ACCUM_TH_DEFAULT = 120;
 const int MIN_RADIUS_DEFAULT = 30;
 const int MAX_RADIUS_DEFAULT = 400;
-
+const unsigned int IMG_MONO = 0;
+const unsigned int IMG_RGB8 = 1;
 
 //struct
 /** \brief Configuration parameters for circle detector
@@ -124,12 +125,13 @@ class CballDetector
 		
 		/**
 		 * 
-		 * Detects a ball in the image without prior information, using circle Hough detector.
+		 * Detects circles in this->inImage without prior information, using circle Hough detector.
 		 * Sets this->ballPos 
 		 * Sets this->bBox
+             * imgEncoding indicates whether the image is IMG_MONO or IMG_RGB8.
 		 * 
 		 **/
-		void houghDetection();
+		void houghDetection(const unsigned int imgEncoding = IMG_RGB8);
 		
             /**
              * 
@@ -137,6 +139,21 @@ class CballDetector
              * 
              **/
             void drawOutputImage();
+            
+            /** \brief Returns the number of circles detected
+             * 
+             * Returns the number of circles detected
+             * 
+             **/
+            unsigned int howManyCircles() const;
+            
+            /** \brief Gets i-th circle 
+             * 
+             * Gets ii-th circle , xx,yy pixel coordinates and rr radius
+             * Returns -1 if ii index is out of the circles vector, , otherwise it returns 0 and the values are set.
+             * 
+             **/
+            int getCircle(const unsigned int ii, double & xx, double & yy, double & rr) const;
             
 		/**
 		 * 
