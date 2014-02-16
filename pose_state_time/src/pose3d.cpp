@@ -38,6 +38,12 @@ void Cpose3d::setPose(const dlib::matrix<double,4,4> & hM)
 	this->pt(0)=hM(0,3); this->pt(1)=hM(1,3); this->pt(2)=hM(2,3);
 }
 
+void Cpose3d::setPose(const double xx, const double yy, const double zz, const double hh, const double pp, const double rr, const bool rd)
+{
+      this->pt = xx,yy,zz;
+      this->rt.setEuler(hh,pp,rr,rd);
+}
+
 void Cpose3d::getPtQuat(dlib::matrix<double,6,1> & ptQuat)
 {
       dlib::matrix<double,3,1> qijk;
@@ -81,28 +87,23 @@ void Cpose3d::getLookAt(lookAtValues & lav)
       lav.uz = rMat(2,2);
 }
 
-// void Cpose3d::getPtFwLf(double & vv[9])
-// {
-//       dlib::matrix<double,3,3> rMat;
-//       
-//       //gets this rotation matrix
-//       this->rt.getMatrix(rMat);
-// 
-//       //sers point
-//       vv[0] = this->pt(0);
-//       vv[1] = this->pt(1);
-//       vv[2] = this->pt(2);
-//       
-//       //sets forward vector
-//       vv[3] = rMat(0,0);
-//       vv[4] = rMat(1,0);
-//       vv[5] = rMat(2,0);
-//       
-//       //sets left vector
-//       vv[6] = rMat(0,1);
-//       vv[7] = rMat(1,1);
-//       vv[8] = rMat(2,1);
-// }
+void Cpose3d::getFwdLft(double vv[6])
+{
+      dlib::matrix<double,3,3> rMat;
+      
+      //gets this rotation matrix
+      this->rt.getMatrix(rMat);
+
+      //sets forward vector
+      vv[0] = rMat(0,0);
+      vv[1] = rMat(1,0);
+      vv[2] = rMat(2,0);
+      
+      //sets left vector
+      vv[3] = rMat(0,1);
+      vv[4] = rMat(1,1);
+      vv[5] = rMat(2,1);
+}
 
 void Cpose3d::moveForward(double dd)
 {

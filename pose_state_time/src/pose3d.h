@@ -117,6 +117,14 @@ class Cpose3d
 		*/		
             void setPose(const dlib::matrix<double,4,4> & hM);
             
+            /** \brief Set pose from x,y,z, and euler angles 
+             * 
+             * Set pose from x,y,z, and euler angles 
+             * Euler angles are heading, pitch and roll following the ZYX convention
+             * 
+            */          
+            void setPose(const double xx, const double yy, const double zz, const double hh, const double pp, const double rr, const bool rd=inRADIANS);
+            
             /** \brief Get pose as a ptQuat vector
              * 
              * Get pose as a ptQuat vector
@@ -142,13 +150,13 @@ class Cpose3d
 		*/		
 		void getLookAt(lookAtValues & lav);
 
-// 		/** \brief Get pt-Fwd-Left vectors 
-// 		 * 
-// 		 * Sets vv as the concatenation of the components of this->pt , forward axiz and left axis.
-//              * May imply updating this->rt.rM if it was not updated
-// 		 * 
-// 		*/		
-// 		void getPtFwLf(double & vv[9]); 
+		/** \brief Get Fwd & Left vectors 
+		 * 
+		 * Sets vv as the concatenation of the components of forward axis and left axis.
+             * May imply updating this->rt.rM if it was not updated
+		 * 
+		*/		
+		void getFwdLft(double vv[6]); 
 		
 		/** \brief Forward motion
 		 * 
