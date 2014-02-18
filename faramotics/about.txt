@@ -1,0 +1,47 @@
+FaRaMoTics: Fast Ranging Models for Robotics
+
+OVERVIEW
+FaRaMoTics is a software library dedicated to fast computation of range observation models in 3D environments. 
+It is specially suited for modelling range sensors, such as 2D or 3D laser scanners and time of flight cameras. 
+It has been initially motivated to compute online expected range observation data in particle filtering for real-time estimation applications, but the library can be also used to simulate these devices.
+
+AUTHORS
+Andreu Corominas Murtra, Institut de Robòtica i Informàtica Industrial, Barcelona, Catalunya. (main developer)
+Eduard Trulls Fortuny, Institut de Robòtica i Informàtica Industrial, Barcelona, Catalunya. (glm integration)
+Joan Pérez Ibarz, Institut de Robòtica i Informàtica Industrial, Barcelona, Catalunya. (testing)
+
+LISCENSE
+Open Source , ... to be done ...
+
+OPERATION SYSTEM
+Tested and developed under Ubuntu 10.04. Not tested under other OS.
+
+DEPENDENCIES
+The following packages are required to be installed on the system: 
+	- freeglut3, freeglut3-dev
+	- g++, cmake
+	- libeigen2-dev.
+FaRaMoTics also uses code source of glm project [1]. This code is provided embedded with the downlodable tarball of FaRaMoTics.
+
+OPTIMAL HARDWARE
+Nvidia graphics card with nvidia drivers is not required but offers optimal results.
+
+INPUT DATA 
+Required inputs to run the models are:
+	- A 3D environment or object model, described in a .obj file. Some models are provided within the tarball
+	- To create rangeScan2D or rangeImage objects, it is required:
+		- angular apertures (horizontal and vertical) [degrees]
+		- number of range points (horizontal and vertical) [#]
+		- angular resolution (horizontal and vertical) [degrees]
+		- Minimum and maximum range [meters]
+
+RUNNING PRINCIPLE
+using openGL ... minimum rendering window size, optimal number of scanning sectors in wide aperture devices
+
+MODEL LIMITATIONS
+- Height constraint is computed from the overhead view point up to the first collision with the model. Therefore, computation of floor constraints with models with multiple stages should be addressed with multiple floor devices setting for each one the overheadHeight parameter.
+- Up to now, only wide aperture devices (more than 170 degrees) are implemented for 2D range scanners, but not for 3D scanners or depth image cameras.
+
+REFERENCES
+[1] SIMPAR paper
+[2] http://devernay.free.fr/hacks/glm/
