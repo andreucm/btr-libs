@@ -167,40 +167,42 @@ class CrangeScan2D
 		*/		
 		~CrangeScan2D();
 
-		/**
-		* \brief Returns deviceId
+		/** \brief Returns deviceId
 		* 
 		* Returns deviceId
 		*
 		*/		
 		unsigned int getDeviceId();
 		
-		/**
-		* \brief Returns numPoints
+		/** \brief Returns numPoints
 		* 
 		* Returns numPoints
 		*
 		*/		
 		unsigned int getNumPoints();
 	
-		/**
-		* \brief Loads 3D model by file
+            /** \brief Loads 3D model by file
+            * 
+            * Loads the given 3D model to each sector
+            *
+            */          
+            void loadAssimpModel(const string & modelFile);
+            
+		/** \brief Loads 3D model by file
 		* 
 		* Loads the given 3D model to each sector
 		*
 		*/		
 		void loadModel(const string & modelFile);
 
-		/**
-		* \brief Loads 3D model by ID
+		/** \brief Loads 3D model by ID
 		* 
 		* Loads the indicated 3D model to each sector
 		*
 		*/		
 		void loadModel(const int modelID);
 		
-		/**
-		* \brief Computes a full 2D range scan.
+		/** \brief Computes a full 2D range scan.
 		* 
 		* Computes a full 2D range scan from position ss. Range results are output to scan vector.
 		*

@@ -1,8 +1,15 @@
+/*
+
+To review:
+http://oglplus.org/oglplus/html/oglplus_tut_001_glut_glew.html
+
+*/
 
 #ifndef sceneRender_H
 #define sceneRender_H
 
 //GLUT
+// #include <GL/glew.h> 
 #include <GL/glut.h>
 
 //the glm source . OBJ import
@@ -160,17 +167,29 @@ class CsceneRender
 		 *
 		*/
 		GLuint modelList;
-		
-		/**
-		 * \brief GLM pointer to model
+
+            /** \brief Assimp pointer to model
+             *
+             * Assimp pointer to 3d model. Set at loadAssimpModel()
+             *
+            */                      
+            //struct aiScene* scene;
+
+            /** \brief Assimp importer
+             *
+             * Assimp 3D model importer
+             *
+            */                                  
+            Assimp::Importer importer;
+            
+		/** \brief GLM pointer to model
 		 *
 		 * GLM pointer to 3d model. Set at loadModel()
 		 *
 		*/		
 		GLMmodel *modelGlm; 
 		
-		/**
-		 * \brief GLM pointer to model (edges only)
+		/** \brief GLM pointer to model (edges only)
 		 *
 		 * GLM pointer to 3d model (edges only). Set at loadModel()
 		 *
@@ -178,24 +197,22 @@ class CsceneRender
 		GLMmodel *edges; 
 
       protected:
-		/**
-		 * \brief Initializes GLUT window
+		/** \brief Initializes GLUT window
 		 *
 		 * Glut window required initializations
 		 *
 		*/						
 		void initWindow();
 		
-		/**
-		 * \brief Initializes GL
+		/** \brief Initializes GL
 		 *
 		 * GL required initializations
 		 *
 		*/								
 		void initGL();
             
-            void apply_material(const struct aiMaterial *mtl);
             void recursive_render (const struct aiScene *sc, const struct aiNode* nd);
+            void apply_material(const struct aiMaterial *mtl);
             void color4_to_float4(const aiColor4D *c, float f[4]);
             void set_float4(float f[4], float a, float b, float c, float d);
 

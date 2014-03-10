@@ -71,6 +71,15 @@ void CrangeScan2D::rangeScan2Dinit(unsigned int numSec, unsigned int nP, float a
 	sectors[ii] = new CrangeSector(nPwide,apertWide,delta,rmin,rmax); //creates the wider sector (the last one)
 }
 
+void CrangeScan2D::loadAssimpModel(const string & modelFile)
+{
+      unsigned int ii=0; 
+      for(ii=0; ii<numSectors; ii++)//delete all sectors
+      {
+            sectors[ii]->loadAssimpModel(modelFile);
+      }
+}
+
 void CrangeScan2D::loadModel(const string & modelFile)
 {
 	unsigned int ii=0; 

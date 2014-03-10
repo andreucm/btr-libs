@@ -33,11 +33,18 @@ CsceneRender::CsceneRender(unsigned int ww, unsigned int hh, float hAp, float vA
 CsceneRender::~CsceneRender()
 {
 	glutDestroyWindow(winId);
-	if ( modelGlm != 0 )
+	
+      if ( modelGlm != 0 )
 	{
 		glmDelete(modelGlm);
 		//cout << "CsceneRender::~CsceneRender(): Deleting 3d model" << endl;
 	}
+	
+	/*if ( scene != NULL )
+      {
+            aiReleaseImport(scene);
+      }*/
+      
 	//cout << "CsceneRender::~CsceneRender(): End of destructor" << endl;
 }
 
@@ -149,6 +156,8 @@ void CsceneRender::setViewPoint(double cx, double cy, double cz, double ax, doub
 void CsceneRender::render()
 {
    	lookAtValues lav;
+      
+      std::cout << "START render()" << std::endl;
 	
 	glutSetWindow(winId);
 	if (!isVisible) this->hide();
@@ -158,25 +167,21 @@ void CsceneRender::render()
 	viewPoint.getLookAt(lav); //gets look at values from a position expressed as (x,y,z,h,p,r)
 	gluLookAt(lav.ex,lav.ey,lav.ez,lav.ax,lav.ay,lav.az,lav.ux,lav.uy,lav.uz);
 	glCallList(modelList);
+      glutSwapBuffers();//To be  confirmed what it's doing !!!
 	glFinish();
 	//if (!isVisible) this->hide();
 	//viewPoint.printPose();
 	//cout << lav.ex << " " << lav.ey << " " << lav.ez << " " << lav.ax << " " << lav.ay << " " << lav.az << " " << lav.ux << " " << lav.uy << " " << lav.uz << endl;
+      
+      std::cout << "END render()" << std::endl;
 }
 
 int CsceneRender::loadAssimpModel(const string & modelFile)
 {      
-      // Create an instance of the Importer class
-      Assimp::Importer importer;
-
-      // And have it read the given file with some example postprocessing
-      // Usually - if speed is not the most important aspect for you - you'll
-      // propably to request more postprocessing than we do in this example.
-      const aiScene* scene = importer.ReadFile( modelFile,
-                              aiProcess_CalcTangentSpace |
-                              aiProcess_Triangulate |
-                              aiProcess_JoinIdenticalVertices |
-                              aiProcess_SortByPType);
+      std::cout << "START loadAssimpModel()" << std::endl;
+      
+      // Import model file
+      const struct aiScene* scene = importer.ReadFile( modelFile, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
       
       // If the import failed, report it
       if ( !scene )
@@ -184,16 +189,19 @@ int CsceneRender::loadAssimpModel(const string & modelFile)
             std::cout << importer.GetErrorString() << std::endl;
             return -1;
       }
-
-      //associates the scene to the model List
-      glutSetWindow(winId);
-      glNewList(modelList, GL_COMPILE);      
-      this->recursive_render(scene, scene->mRootNode);
-      glEndList();
-      glFinish(); //finish all openGL work      
-      
-      // We're done. Everything will be cleaned up by the importer destructor
-      return 1;
+      else //if scene != NULL, import suceed, so associates the scene to the model List
+      {
+            std::cout << "scene->mRootNode.mNumMeshes: " << scene->mRootNode->mNumMeshes << std::endl;      
+            glutSetWindow(winId);
+            glNewList(modelList, GL_COMPILE);      
+            this->recursive_render(scene, scene->mRootNode);
+            glEndList();
+            glFinish(); //finish all openGL work      
+            
+            // We're done. Everything will be cleaned up by the importer destructor
+            std::cout << "END loadAssimpModel()" << std::endl;
+            return 1;
+      }
 }
 
 int CsceneRender::loadModel(const string & modelFile, const string & edgesFile)
@@ -427,6 +435,122 @@ void CsceneRender::loadModel(const int modelID)
 
 
 //assimp functions 
+//this recursive_render has been found here: http://www.lighthouse3d.com/cg-topics/code-samples/importing-3d-models-with-assimp/
+/*void recursive_render (const aiScene *sc, const aiNode* nd)
+{
+ 
+    // Get node transformation matrix
+    aiMatrix4x4 m = nd->mTransformation;
+    // OpenGL matrices are column major
+    m.Transpose();
+ 
+    // save model matrix and apply node transformation
+    pushMatrix();
+ 
+    float aux[16];
+    memcpy(aux,&m,sizeof(float) * 16);
+    multMatrix(modelMatrix, aux);
+    setModelMatrix();
+ 
+    // draw all meshes assigned to this node
+    for (unsigned int n=0; n < nd->mNumMeshes; ++n){
+        // bind material uniform
+        glBindBufferRange(GL_UNIFORM_BUFFER, materialUniLoc, myMeshes[nd->mMeshes[n]].uniformBlockIndex, 0, sizeof(struct MyMaterial)); 
+        // bind texture
+        glBindTexture(GL_TEXTURE_2D, myMeshes[nd->mMeshes[n]].texIndex);
+        // bind VAO
+        glBindVertexArray(myMeshes[nd->mMeshes[n]].vao);
+        // draw
+        glDrawElements(GL_TRIANGLES,myMeshes[nd->mMeshes[n]].numFaces*3,GL_UNSIGNED_INT,0);
+ 
+    }
+ 
+    // draw all children
+    for (unsigned int n=0; n < nd->mNumChildren; ++n){
+        recursive_render(sc, nd->mChildren[n]);
+    }
+    popMatrix();
+}*/
+
+void CsceneRender::recursive_render (const struct aiScene *sc, const struct aiNode* nd)
+{
+      unsigned int i;
+      unsigned int n = 0, t;
+      aiMatrix4x4 m = nd->mTransformation;
+
+      // update transform
+      aiTransposeMatrix4(&m);
+      glPushMatrix();
+      glMultMatrixf((float*)&m);
+
+      // draw all meshes assigned to this node
+      std::cout << __LINE__ << ": nd->mNumMeshes: " << nd->mNumMeshes << std::endl;
+      //std::cout << __LINE__ << ": sc->mMeshes[nd->mMeshes[n]]: " << sc->mMeshes[nd->mMeshes[n]] << std::endl; 
+      for (; n < nd->mNumMeshes; ++n)
+      {
+            const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[n]];
+            //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
+            
+            if(mesh->mNormals == NULL) 
+            {
+                  glDisable(GL_LIGHTING);
+            } 
+            else 
+            {
+                  glEnable(GL_LIGHTING);
+            }
+
+            std::cout << __LINE__ << ": mesh->mNumFaces: " << mesh->mNumFaces << std::endl; 
+            
+            bool dbg=true;
+            if (dbg)
+            {
+                  std::cout << __LINE__ << ": mesh->HasFaces(): " << mesh->HasFaces() << std::endl;
+                  if (mesh->mFaces == NULL) std::cout << __LINE__ << ": mesh->mFaces is NULL" << std::endl; 
+                  std::cout << __LINE__ << ": mesh->HasPositions(): " << mesh->HasPositions() << std::endl; 
+                  std::cout << __LINE__ << ": mesh->HasNormals(): " << mesh->HasNormals() << std::endl; 
+            }
+            
+            for (t = 0; t < mesh->mNumFaces; ++t) 
+            {
+                  std::cout << __LINE__ << ": t: " << t << std::endl; 
+                  const struct aiFace* face = &mesh->mFaces[t];
+                  GLenum face_mode;
+                  std::cout << __LINE__ << ": face(ptr): " << face << endl;
+                  std::cout << __LINE__ << ": mesh->mFaces[t].mNumIndices: " << mesh->mFaces[t].mNumIndices << std::endl; 
+                  
+                  switch(face->mNumIndices) 
+                  {
+                        case 1: face_mode = GL_POINTS; std::cout << "GL_POINTS" << std::endl; break;
+                        case 2: face_mode = GL_LINES; std::cout << "GL_LINES" << std::endl; break;
+                        case 3: face_mode = GL_TRIANGLES; std::cout << "GL_TRIANGLES" << std::endl; break;
+                        default: face_mode = GL_POLYGON; std::cout << "GL_POLYGON" << std::endl; break;
+                  }
+                  std::cout << __LINE__ << ": t: " << t << std::endl; 
+
+                  glBegin(face_mode);
+                  for(i = 0; i < face->mNumIndices; i++) 
+                  {
+                        std::cout << __LINE__ << ": i: " << i << std::endl; 
+                        int index = face->mIndices[i];
+                        if(mesh->mColors[0] != NULL) glColor4fv((GLfloat*)&mesh->mColors[0][index]);
+                        if(mesh->mNormals != NULL) glNormal3fv(&mesh->mNormals[index].x);
+                        glVertex3fv(&mesh->mVertices[index].x);
+                  }
+                  glEnd();
+            }
+      }
+
+      // draw all children
+      for (n = 0; n < nd->mNumChildren; ++n) 
+      {
+            recursive_render(sc, nd->mChildren[n]);
+      }
+
+      // pop gl matrix
+      glPopMatrix();
+}
+
 void CsceneRender::apply_material(const struct aiMaterial *mtl)
 {
       float c[4];
@@ -490,66 +614,6 @@ void CsceneRender::apply_material(const struct aiMaterial *mtl)
             glDisable(GL_CULL_FACE);
       else 
             glEnable(GL_CULL_FACE);
-}
-
-void CsceneRender::recursive_render (const struct aiScene *sc, const struct aiNode* nd)
-{
-      unsigned int i;
-      unsigned int n = 0, t;
-      aiMatrix4x4 m = nd->mTransformation;
-
-      // update transform
-      aiTransposeMatrix4(&m);
-      glPushMatrix();
-      glMultMatrixf((float*)&m);
-
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-      
-      // draw all meshes assigned to this node
-      for (; n < nd->mNumMeshes; ++n) {
-            const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[n]];
-
-            apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-            if(mesh->mNormals == NULL) {
-                  glDisable(GL_LIGHTING);
-            } else {
-                  glEnable(GL_LIGHTING);
-            }
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-            for (t = 0; t < mesh->mNumFaces; ++t) {
-                  const struct aiFace* face = &mesh->mFaces[t];
-                  GLenum face_mode;
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-                  switch(face->mNumIndices) {
-                        case 1: face_mode = GL_POINTS; break;
-                        case 2: face_mode = GL_LINES; break;
-                        case 3: face_mode = GL_TRIANGLES; break;
-                        default: face_mode = GL_POLYGON; break;
-                  }
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-                  glBegin(face_mode);
-
-                  for(i = 0; i < face->mNumIndices; i++) {
-                        int index = face->mIndices[i];
-                        if(mesh->mColors[0] != NULL)
-                              glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-                        if(mesh->mNormals != NULL) 
-                              glNormal3fv(&mesh->mNormals[index].x);
-                        glVertex3fv(&mesh->mVertices[index].x);
-                  }
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-                  glEnd();
-            }
-
-      }
-
-      // draw all children
-      for (n = 0; n < nd->mNumChildren; ++n) {
-            recursive_render(sc, nd->mChildren[n]);
-      }
-//std::cout << "recursive_render: " << __LINE__ << std::endl;
-      glPopMatrix();
 }
 
 void CsceneRender::color4_to_float4(const aiColor4D *c, float f[4])
