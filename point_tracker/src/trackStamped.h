@@ -136,7 +136,21 @@ class CtrackStamped
 		 * 
 		 **/
             cv::Point2f & getPoint(const unsigned int ii);
-
+            
+            /** \brief Returns last X pixel coordinate of i^th point of the track
+             * 
+             * Returns last X pixel coordinate of i^th point of the track
+             * 
+             **/
+            double getX();
+            
+            /** \brief Returns last Y pixel coordinate of i^th point of the track
+             * 
+             * Returns last Y pixel coordinate of i^th point of the track
+             * 
+             **/
+            double getY();
+            
             /** \brief Sets a visualization color
             *
             * Randomly sets a visualization color 

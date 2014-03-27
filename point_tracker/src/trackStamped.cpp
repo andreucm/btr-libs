@@ -41,6 +41,17 @@ cv::Point2f & CtrackStamped::getPoint(const unsigned int ii)
 	return this->track[ii];
 }
 
+double CtrackStamped::getX()
+{
+      return this->track.back().x;
+}
+
+double CtrackStamped::getY()
+{
+      return this->track.back().y;
+}
+
+
 void CtrackStamped::setVizColor()
 {
         this->vizColor[0] = (int)(255.0*rand()/RAND_MAX);
