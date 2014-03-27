@@ -3,8 +3,10 @@
 #include <sys/time.h>
 
 enum inputMode {FRAMES=1, VIDEO_FILE, VIDEO_DEVICE};
-const bool verbose = false;
+const bool VERBOSE_MODE = false;
 const unsigned int FILE_NAME_LENGTH = 6;
+const unsigned int IMAGE_COUNTER_INIT = 100;
+const bool SAVE_IMAGES = true;
 
 int main(int argc, char *argv[])
 {
@@ -12,21 +14,28 @@ int main(int argc, char *argv[])
 	bool runOk = true;
 	std::string fileName;
 	std::string pathName;
-	unsigned int imageCounter = 100;
+	unsigned int imageCounter = IMAGE_COUNTER_INIT;
 	std::ostringstream imageName;
 	cv::VideoCapture video;
 	cv::Mat currentFrameRaw; 
       timeval ts;
       double timeStamp;
       inputMode inMode;
+      unsigned int fType;
+      pointTrackerParams fTrackerParams;
+      
+      //creates a point tracker object
+      CpointTracker fTracker;      
 	
 	//check input params
 	if (argc!=4)
 	{
-		std::cout << "\nCalling sequence is: $ trackerMain [inputMode] [inputName] [featureType]" << std::endl <<
-		std::cout << "     inputMode: 'f' , 'v' or 'd' " << std::endl <<
-		std::cout << "     inputName: folder|fileName|deviceId, respectively if inputMode is f,v or d" << std::endl <<
-		std::cout << "     featureType: 1->SURF, 2->ORB, 3->BRISK" << std::endl;
+		std::cout << std::endl << 
+		"Calling sequence is: $ trackerMain [inputMode] [inputName] [featureType]" << std::endl <<
+		"     inputMode: 'f' , 'v' or 'd' " << std::endl <<
+		"     inputName: folder|fileName|deviceId, respectively if inputMode is f,v or d" << std::endl <<
+		"     featureType: 1->SURF, 2->ORB, 3->BRISK" << std::endl << std::endl <<
+		"EXIT PROGRAM" << std::endl;
 		return -1;
 	}
 
@@ -61,15 +70,28 @@ int main(int argc, char *argv[])
 	}
 
 	//get and set user's choice for feature type
-	unsigned int fType = (unsigned int)atoi(argv[3]);
+	fType = (unsigned int)atoi(argv[3]);
       if ( (fType < 1) || (fType > 3) )
       {
             std::cout << "Unknown Feature Type: Please set 1->SURF, 2->ORB, 3->BRISK" << std::endl; 
             return -1;
       }
+      else
+      {
+            fTrackerParams.featureType = (featureTypeEnum)fType;
+      }
       
-      //creates a point tracker object
-      CpointTracker fTracker(fType);
+      //sets other params to default
+      fTrackerParams.verbose = VERBOSE_MODE;
+      fTrackerParams.min_hessian = MIN_HESSIAN_DEFAULT;
+      fTrackerParams.min_features = MIN_FEATURES_DEFAULT;
+      fTrackerParams.max_correspondence_dist = MAX_CORRESPONDENCE_DIST_DEFAULT;
+      fTrackerParams.old_track_latency = OLD_TRACK_LATENCY_DEFAULT;
+      fTrackerParams.viewMode = VIEW_TRACKS;
+           
+      //sets default configs & print them 
+      fTracker.setParameters(fTrackerParams);
+      fTracker.printConfig();
 
 	//main loop 
 	while(runOk)
@@ -89,7 +111,7 @@ int main(int argc, char *argv[])
                         imageName.clear();
                         imageName << ".jpg";
                         currentFrameRaw = cv::imread(imageName.str());
-                        if (verbose) std::cout << "Processing image " << imageName.str() << std::endl;
+                        if (fTrackerParams.verbose) std::cout << "Processing image " << imageName.str() << std::endl;
                         imageCounter = imageCounter + 1;
                         break;
                   case VIDEO_FILE:
@@ -115,8 +137,8 @@ int main(int argc, char *argv[])
                   fTracker.setTimeStamp(timeStamp);
                   
                   //displays verbose info
-                  if (verbose) std::cout << "Image size: " << currentFrameRaw.rows << "," << currentFrameRaw.cols << std::endl;
-                  if (verbose) std::cout << "currentFrameRaw.flags: " << std::hex << currentFrameRaw.flags << std::endl;
+                  if (fTrackerParams.verbose) std::cout << "Image size: " << currentFrameRaw.rows << "," << currentFrameRaw.cols << std::endl;
+                  if (fTrackerParams.verbose) std::cout << "currentFrameRaw.flags: " << std::hex << currentFrameRaw.flags << std::endl;
 			
 			//find point features 
 			fTracker.findFeatures(currentFrameRaw,false);
@@ -127,8 +149,12 @@ int main(int argc, char *argv[])
 			//update individual feature tracks
 			fTracker.updateTracks();
 			
-			//display
-			fTracker.displayOutput(VIEW_TRACKS);
+                  //build output image, if ok, display it, and save it according SAVE_IMAGES
+                  if ( fTracker.buildOutputImage() ) 
+                  {
+                        fTracker.displayOutputImage();
+                        if ( SAVE_IMAGES ) fTracker.saveOutputImage("/home/andreu/dataSets/fakeTests/");
+                  }
 			
 			//switch frame and keypoint buffers
 			fTracker.switchBuffers();

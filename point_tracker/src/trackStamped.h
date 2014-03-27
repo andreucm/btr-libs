@@ -109,7 +109,14 @@ class CtrackStamped
 		 **/
 		void setId(const unsigned int tId);
 		
-		/** \brief Push a new entry to the track
+            /** \brief Gets id
+             * 
+             * Gets id
+             * 
+             **/
+            unsigned int getId() const;
+
+            /** \brief Push a new entry to the track
 		 * 
 		 * Push a new time/point entry to the track
 		 * 

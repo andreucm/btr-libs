@@ -20,6 +20,11 @@ void CtrackStamped::setId(const unsigned int tId)
 	id = tId;
 }
 
+unsigned int CtrackStamped::getId() const
+{
+      return id;
+}
+
 void CtrackStamped::addPoint(const double ts, const cv::Point2f & pt)
 {
 	time.push_back(ts);
