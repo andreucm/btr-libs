@@ -1,6 +1,6 @@
 FIND_PATH(
       faramotics_INCLUDE_DIRS
-      NAMES sceneRender.h groundRender.h floorGrid.h rangeSector.h rangeImage.h rangeScan2D.h dynamicSceneRender.h
+      NAMES sceneRender.h dynamicSceneRender.h rangeSector.h rangeScan2D.h rangeImage.h
       PATHS /usr/local/include/btr-headers
 )
 

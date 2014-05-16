@@ -1,10 +1,3 @@
-/*
-
-To review:
-http://oglplus.org/oglplus/html/oglplus_tut_001_glut_glew.html
-
-*/
-
 #ifndef sceneRender_H
 #define sceneRender_H
 
@@ -13,17 +6,18 @@ http://oglplus.org/oglplus/html/oglplus_tut_001_glut_glew.html
 #include <GL/glut.h>
 
 //the glm source . OBJ import
-#include "glm_src/glm.h" 
+// #include "glm_src/glm.h" 
 
 //pose3d geometry
 #include "pose3d.h"
 
 //asimp 3d model import
 #include <assimp/cimport.h>
-//#include <assimp/matrix4x4.h>
 #include <assimp/Importer.hpp> // C++ importer interface
 #include <assimp/scene.h> // Output data structure
 #include <assimp/postprocess.h> // Post processing flags
+#include <assimp/Logger.hpp> // logger
+#include <assimp/DefaultLogger.hpp> // logger
 
 using namespace std;
 
@@ -168,13 +162,6 @@ class CsceneRender
 		*/
 		GLuint modelList;
 
-            /** \brief Assimp pointer to model
-             *
-             * Assimp pointer to 3d model. Set at loadAssimpModel()
-             *
-            */                      
-            //struct aiScene* scene;
-
             /** \brief Assimp importer
              *
              * Assimp 3D model importer
@@ -187,14 +174,14 @@ class CsceneRender
 		 * GLM pointer to 3d model. Set at loadModel()
 		 *
 		*/		
-		GLMmodel *modelGlm; 
+		//GLMmodel *modelGlm; 
 		
 		/** \brief GLM pointer to model (edges only)
 		 *
 		 * GLM pointer to 3d model (edges only). Set at loadModel()
 		 *
 		*/				
-		GLMmodel *edges; 
+		//GLMmodel *edges; 
 
       protected:
 		/** \brief Initializes GLUT window
@@ -210,11 +197,13 @@ class CsceneRender
 		 *
 		*/								
 		void initGL();
-            
-            void recursive_render (const struct aiScene *sc, const struct aiNode* nd);
-            void apply_material(const struct aiMaterial *mtl);
-            void color4_to_float4(const aiColor4D *c, float f[4]);
-            void set_float4(float f[4], float a, float b, float c, float d);
+
+            /** \brief draw imported 3d model
+             * 
+             * Draw imported 3D model using assimp library
+             * 
+             **/
+            void recursiveAssimpRender (const struct aiScene *sc, const struct aiNode* nd);
 
 	public:
 		/**
@@ -319,15 +308,7 @@ class CsceneRender
              * Loads a model from a file 
              *
             */                                                                      
-            virtual int loadAssimpModel(const string & modelFile);
-
-		/**
-		 * \brief Loads model from a .obj file
-		 *
-		 * Loads model from a .obj file. Optionally, it can be also specifed an edges file.
-		 *
-		*/										
-		virtual int loadModel(const string & modelFile, const string & edgesFile = ""); //draws the entire model decribed at the .obj file
+            virtual int loadAssimpModel(const string & modelFile, const bool wireFrame = false);
 
 		/**
 		 * \brief Loads one of the hardcoded models
@@ -335,6 +316,14 @@ class CsceneRender
 		 * Loads one of the hardcoded models identified with modelID
 		 *
 		*/										
-		virtual void loadModel(const int modelID); //draws one of the hard coded models
+		virtual void loadModel(const int modelID);
+            
+            /**
+             * \brief Loads model from a .obj file
+             *
+             * Loads model from a .obj file by using glm lib. Optionally, it can be also specifed an edges file.
+             *
+            */                                                          
+            //virtual int loadModel(const string & modelFile, const string & edgesFile = "");
 };
 #endif

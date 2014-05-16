@@ -2,7 +2,7 @@
 
 CdynamicSceneRender::CdynamicSceneRender(unsigned int ww, unsigned int hh, float hAp, float vAp, float nearZ, float farZ) : CsceneRender(ww,hh,hAp,vAp,nearZ,farZ)
 {
-      //generate lists
+      //init sensor frame and scan hits lists
       frameList = glGenLists(1);
       scanHitsList = glGenLists(1);
 }
@@ -16,23 +16,34 @@ void CdynamicSceneRender::render()
 {
    	lookAtValues lav;
 	
+      //sets target window
 	glutSetWindow(winId);
-// 	cout << "render(): " << __LINE__ << ": " << winId << endl;
-	//if (!isVisible) this->hide();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer with previous values
-	glMatrixMode(GL_MODELVIEW); //necessary to perform viewing and model transformations
-	glLoadIdentity(); //resets the model/view matrix
-	viewPoint.getLookAt(lav); //gets look at values from a position expressed as (x,y,z,h,p,r)
+      
+      //Clear Screen And Depth Buffer with previous values
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+      
+      //Sets GL_MODELVIEW, necessary to perform viewing and model transformations
+	glMatrixMode(GL_MODELVIEW); 
+      
+      //resets the model/view matrix
+	glLoadIdentity(); 
+      
+      //gets "look at" values from a 3D position
+	viewPoint.getLookAt(lav); 
+      
+      //sets matrix viewpoint though gluLookAt()
 	gluLookAt(lav.ex,lav.ey,lav.ez,lav.ax,lav.ay,lav.az,lav.ux,lav.uy,lav.uz);
-	glCallList(modelList);
-	glCallList(scanHitsList);
+      
+      //calls all lists to render: model, scan and sensor frame
+      	glCallList(modelList);
+      	glCallList(scanHitsList);
 	glCallList(frameList);
-// 	cout << "render(): " << __LINE__ << ": " << modelList << "," << scanHitsList << "," << frameList << endl;
+      
+      //that's all
 	glFinish();
 }
 
 void CdynamicSceneRender::drawScan(Cpose3d devicePose, vector<float> scan, double aperture, double firstAngle)
-//void CdynamicSceneRender::drawScan()
 {
 	//GLuint dynamicObjectsList;
 	unsigned int ii;
@@ -44,49 +55,22 @@ void CdynamicSceneRender::drawScan(Cpose3d devicePose, vector<float> scan, doubl
       //set window and list
 	glutSetWindow(winId);	
 	glNewList(scanHitsList, GL_COMPILE);
-	
-// 	glColor3f(0.,1.,0.);
-	glColor3f(1.,0.,0.);
-// 	glMatrixMode(GL_MODELVIEW); //necessary to perform viewing and model transformations	
-
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glColor3f(0.,1.,0.); //set green color
+      
 	for (ii=0; ii<scan.size(); ii++)
 	{
-		//cout << scan.at(ii) << " " ;
 		//compute the point wrt model
 		scanPoint.setPose(devicePose);
 		scanPoint.rt.turnHeading(firstAngle-(double)ii*delta);//head the ray
-		//scanPoint.turnZaxis(aperture/2.0-(double)ii*delta);//head the ray
 		scanPoint.moveForward(scan.at(ii));//move following the ray
-		//scanPoint.printPosition();
 		
 		//draws the scan point
-		//glLoadIdentity(); //resets the model/view matrix
 		glTranslatef(scanPoint.pt(0),scanPoint.pt(1),scanPoint.pt(2));// moves model origin
 		gluSphere(gluNewQuadric(),0.1, 5,5);
-		//gluNewQuadric();
-		//gluCylinder(gluNewQuadric(),0.005,0.005,0.005,4,2);
 		glTranslatef(-scanPoint.pt(0),-scanPoint.pt(1),-scanPoint.pt(2));// moves model origin
 	}
-	//cout << endl;
 
-/*
-	//center ray in red
-	glColor3f(1.,0.,0.);
-	scanPoint.setFullPose(devicePose);
-	scanPoint.moveForward(scan.at(scan.size()/2));//move following the ray
- 	glTranslatef(scanPoint.getX(),scanPoint.getY(),scanPoint.getZ());// moves model origin
- 	gluSphere(gluNewQuadric(),0.2, 10,10);
-	glTranslatef(-scanPoint.getX(),-scanPoint.getY(),-scanPoint.getZ());// moves model origin
-	
-	//center+1 ray in grey
-	glColor3f(0.5,0.5,0.5);
-	scanPoint.setFullPose(devicePose);
-	scanPoint.turnZaxis(firstAngle-(double)(scan.size()/2 + 1)*delta);//head the ray
-	scanPoint.moveForward(scan.at(scan.size()/2 + 1));//move following the ray
- 	glTranslatef(scanPoint.getX(),scanPoint.getY(),scanPoint.getZ());// moves model origin
- 	gluSphere(gluNewQuadric(),0.2, 10,10);
-*/
-	
 	glEndList();
 	glFinish();	//finish all openGL work
 }
@@ -104,6 +88,7 @@ void CdynamicSceneRender::drawPoseAxis(Cpose3d & axis)
       
       //set list
 	glNewList(frameList, GL_COMPILE);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	//x axis
 	glColor3f(1.,0.,0.);

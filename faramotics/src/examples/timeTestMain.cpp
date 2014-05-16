@@ -1,10 +1,7 @@
 
+
 #include <time.h>
 #include <sys/time.h>
-
-//#include "../src/sceneRender.h"
-// #include "../src/groundRender.h"
-//#include "../src/rangeSector.h"
 #include "../src/rangeScan2D.h"
 #include "../src/rangeImage.h"
 

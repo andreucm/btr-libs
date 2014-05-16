@@ -188,19 +188,19 @@ class CrangeScan2D
             */          
             void loadAssimpModel(const string & modelFile);
             
-		/** \brief Loads 3D model by file
-		* 
-		* Loads the given 3D model to each sector
-		*
-		*/		
-		void loadModel(const string & modelFile);
-
 		/** \brief Loads 3D model by ID
 		* 
 		* Loads the indicated 3D model to each sector
 		*
 		*/		
 		void loadModel(const int modelID);
+            
+            /** \brief Loads 3D model by file
+            * 
+            * Loads the given 3D model to each sector
+            *
+            */          
+            //void loadModel(const string & modelFile);            
 		
 		/** \brief Computes a full 2D range scan.
 		* 

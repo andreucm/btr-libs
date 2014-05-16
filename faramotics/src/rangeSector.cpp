@@ -21,9 +21,12 @@ CrangeSector::CrangeSector(unsigned int numP, float apert, float angularAcc, flo
 	//inits window and GL state
 	initWindow();
 	initGL();
-	//this->hide();//To search: Some graphics cards avoid depth computations when window is hidden
+      //this->hide();//To search: Some graphics cards avoid depth computations when window is hidden
       
-      //init  render lists
+      //avoid color computation , not necessary for depth 
+      glDisable(GL_COLOR_MATERIAL);
+      
+      //init model render lists
       modelList = glGenLists(1);
 
 	//precomputes vectors
@@ -33,7 +36,6 @@ CrangeSector::CrangeSector(unsigned int numP, float apert, float angularAcc, flo
 		wi=zNear*tan(ai);//distance from the hit point i to the x sensor axis
 		kH.push_back( (int) ((0.5 - wi/widthM)*widthP) );//pixel index associated to ray i
 		cosHi.push_back( cos(ai) ); //cosinus of the ray angle
-		//cout << "kHi = " << kH.at(ii) << "; cosHi = " << cosHi.at(ii) << endl;
 	}
 }
 
