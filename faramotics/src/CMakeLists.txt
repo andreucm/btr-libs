@@ -5,13 +5,14 @@ cmake_minimum_required(VERSION 2.6)
 FIND_PACKAGE(pose_state_time REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
+FIND_LIBRARY(Assimp_LIBRARIES assimp HINTS /usr/local/lib NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH) 
 
 #required directories to find includes
 INCLUDE_DIRECTORIES(.)
 INCLUDE_DIRECTORIES(${pose_state_time_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${GLUT_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${Assimp_SOURCE_DIR}/include ${Assimp_SOURCE_DIR}/code)
+# INCLUDE_DIRECTORIES(${Assimp_SOURCE_DIR}/include ${Assimp_SOURCE_DIR}/code)
 
 # GLM lib srcs
 # SET(GLM_SRCS
@@ -33,8 +34,6 @@ INCLUDE_DIRECTORIES(${Assimp_SOURCE_DIR}/include ${Assimp_SOURCE_DIR}/code)
 SET(SRCS
 	sceneRender.cpp
 	dynamicSceneRender.cpp
-# 	groundRender.cpp
-# 	floorGrid.cpp
       rangeSector.cpp
       rangeScan2D.cpp      
 	rangeImage.cpp
@@ -43,8 +42,6 @@ SET(SRCS
 SET(HEADERS 
 	sceneRender.h
 	dynamicSceneRender.h
-# 	groundRender.h
-# 	floorGrid.h
       rangeSector.h
       rangeScan2D.h      
 	rangeImage.h
@@ -52,7 +49,7 @@ SET(HEADERS
 
 # create the shared library
 ADD_LIBRARY(faramotics SHARED ${SRCS}) 
-TARGET_LINK_LIBRARIES(faramotics assimp ${OPENGL_LIBRARIES} ${GLUT_glut_LIBRARY} ${pose_state_time_LIBRARIES})
+TARGET_LINK_LIBRARIES(faramotics ${Assimp_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_glut_LIBRARY} ${pose_state_time_LIBRARIES})
 
 #install 
 INSTALL(TARGETS faramotics

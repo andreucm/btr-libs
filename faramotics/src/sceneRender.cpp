@@ -206,7 +206,8 @@ int CsceneRender::loadAssimpModel(const string & modelFile, const bool wireFrame
             glFinish(); //finish all openGL work      
             
             // We're done. Everything will be cleaned up by the importer destructor
-            std::cout << "Model loaded successfully by Assimp::Importer" << std::endl;
+            std::cout << "Model loaded successfully by Assimp::Importer";
+            std::cout << " (Version: " << aiGetVersionMajor() << "." << aiGetVersionMinor() << ")" << std::endl;
             return 1;
       }
 }

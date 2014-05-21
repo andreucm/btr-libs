@@ -29,14 +29,14 @@ int main(int argc, char** argv)
 	
 	//create a viewer for the 3D model and scan points
 	myRender = new CdynamicSceneRender(1200,700,90*M_PI/180,90*700.0*M_PI/(1200.0*180.0),0.2,100);
-      //myRender->loadAssimpModel(modelFileName,true); //with wireframe
-      myRender->loadModel(DEBUG_SCENE);
+      myRender->loadAssimpModel(modelFileName,true); //with wireframe
+//       myRender->loadModel(DEBUG_SCENE);
       //myRender->loadModel(SPHERE);
 	
 	//create scanner and load 3D model
 	myScanner = new CrangeScan2D(LEUZE_RS4);//or HOKUYO_UTM30LX_180DEG
-	//myScanner->loadAssimpModel(modelFileName);
-      myScanner->loadModel(DEBUG_SCENE);
+	myScanner->loadAssimpModel(modelFileName);
+      //myScanner->loadModel(DEBUG_SCENE);
       //myScanner->loadModel(SPHERE);
 
       sleep(1);

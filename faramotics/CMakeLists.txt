@@ -27,15 +27,6 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -D_REENTRANT")
 
 ADD_SUBDIRECTORY(src)
 
-#make doc
-FIND_PACKAGE(Doxygen)
-FIND_PATH(IRI_DOC_DIR doxygen.conf ${CMAKE_SOURCE_DIR}/doc/iri_doc/)
-IF (IRI_DOC_DIR)
-  ADD_CUSTOM_TARGET (doc ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/iri_doc/doxygen.conf)
-ELSE (IRI_DOC_DIR)
-  ADD_CUSTOM_TARGET (doc ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/doxygen.conf)
-ENDIF (IRI_DOC_DIR)
-
 #distclean
 ADD_CUSTOM_TARGET (distclean @echo cleaning cmake files)
 IF (UNIX)
