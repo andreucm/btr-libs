@@ -231,6 +231,15 @@ class Crotation
             */          
             void turnHeading(const double alpha, bool rd=inRADIANS);
             
+            /** \brief Pitch rotation
+             * 
+             * Rotate frame by alpha radians along "this" y-axis, implementing vehicle pitching.
+             * To express rotation in degrees, set rd boolean to "inDEGREES"
+             * 
+            */          
+            void turnPitch(const double alpha, bool rd=inRADIANS);
+
+            
             /** \brief print rotation
              * 
              * Prints rotation as:

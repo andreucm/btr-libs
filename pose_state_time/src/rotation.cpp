@@ -137,6 +137,12 @@ void Crotation::turnHeading(const double alpha, bool rd)
       rotateUaxis(alpha, rM(0,2), rM(1,2), rM(2,2), rd);
 }
 
+void Crotation::turnPitch(const double alpha, bool rd)
+{
+      if ( rStatus & OLD_MATRIX ) updateMatrix();
+      rotateUaxis(alpha, rM(0,1), rM(1,1), rM(2,1), rd);    
+}
+
 void Crotation::print(const bool rd)
 {
       //update things
