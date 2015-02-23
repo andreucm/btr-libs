@@ -1,7 +1,7 @@
 #edit the following line to add the librarie's header files
 FIND_PATH(
         pose_state_time_INCLUDE_DIRS
-        NAMES timeStamp.h angle.h quaternion.h rotation.h                
+        NAMES timeStamp.h angle.h quaternion.h rotation.h pose3d.h               
         PATHS /usr/local/include/btr-headers
 )
 
